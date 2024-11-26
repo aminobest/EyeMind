@@ -1,12 +1,12 @@
-var localRpid = -1;
+var localRpid = -1
 
 function setLocalRpid(val) {
-	localRpid = val;
+  localRpid = val
 }
 
 function getLocalRpid() {
-	return localRpid;
+  return localRpid
 }
 
-exports.setLocalRpid = setLocalRpid;
-exports.getLocalRpid = getLocalRpid;
+exports.setLocalRpid = setLocalRpid
+exports.getLocalRpid = getLocalRpid

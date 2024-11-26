@@ -1,24 +1,27 @@
 var activeFeatures = {
-	heatmapActive: false, 
-	projectionAndMappingActive: false
+  heatmapActive: false,
+  projectionAndMappingActive: false,
 }
 
 function setheatmapActive(val) {
-    activeFeatures["heatmapActive"] = val;
+  activeFeatures['heatmapActive'] = val
 }
 
-
 function isHeatmapActive() {
-    return activeFeatures.heatmapActive;
+  return activeFeatures.heatmapActive
 }
 
 function SetProjectionAndMappingActive(val) {
-    activeFeatures["projectionAndMappingActive"] = val;
+  activeFeatures['projectionAndMappingActive'] = val
 }
 
 function areProjectionAndMappingActive() {
-    return activeFeatures.projectionAndMappingActive;
+  return activeFeatures.projectionAndMappingActive
 }
 
-
-export{setheatmapActive ,SetProjectionAndMappingActive, isHeatmapActive, areProjectionAndMappingActive};
+export {
+  setheatmapActive,
+  SetProjectionAndMappingActive,
+  isHeatmapActive,
+  areProjectionAndMappingActive,
+}

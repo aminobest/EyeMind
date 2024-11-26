@@ -20,42 +20,44 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-
-
-const CopyWebpackPlugin = require('copy-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin')
 
 module.exports = {
-   node: {
+  node: {
     net: 'empty',
     tls: 'empty',
     fs: 'empty',
-    child_process: "empty"
+    child_process: 'empty',
   },
   entry: {
-    bundle: ['./app/client/app.js']
+    bundle: ['./app/client/app.js'],
   },
   output: {
     path: __dirname + '/public',
-    filename: 'app.js'
+    filename: 'app.js',
   },
   module: {
     rules: [
       {
         test: /\.bpmn$/,
-        use: 'raw-loader'
+        use: 'raw-loader',
       },
-       {
+      {
         test: /\.svg$/,
-        use: 'react-svg-loader'
-      }
-    ]
+        use: 'react-svg-loader',
+      },
+    ],
   },
   plugins: [
     new CopyWebpackPlugin([
-      { from: 'assets/**', to: 'vendor/bpmn-js', context: 'node_modules/bpmn-js/dist/' },
+      {
+        from: 'assets/**',
+        to: 'vendor/bpmn-js',
+        context: 'node_modules/bpmn-js/dist/',
+      },
       { from: '**/*.{html,css,svg,jpg}', context: './app/client/' },
-    ])
+    ]),
   ],
   mode: 'development',
-  devtool: 'source-map'
-};
+  devtool: 'source-map',
+}

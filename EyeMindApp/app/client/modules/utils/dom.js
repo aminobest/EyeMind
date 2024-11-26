@@ -20,8 +20,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-
-
 /**
  * Title: move from one view to another
  *
@@ -41,16 +39,13 @@ SOFTWARE.*/
  *
  */
 
-function moveFromTo(fromDomElementId,toDomElementId,toDomElementDisplayMode) {
+function moveFromTo(fromDomElementId, toDomElementId, toDomElementDisplayMode) {
+  console.log('moveFromTo', arguments)
 
-  console.log("moveFromTo", arguments);
-
-
-  hideElement(fromDomElementId);
-  document.getElementById(toDomElementId).style.display = toDomElementDisplayMode; 
-
+  hideElement(fromDomElementId)
+  document.getElementById(toDomElementId).style.display =
+    toDomElementDisplayMode
 }
-
 
 /**
  * Title: update text and display dom element
@@ -71,15 +66,16 @@ function moveFromTo(fromDomElementId,toDomElementId,toDomElementDisplayMode) {
  *
  */
 
-function updateTextAndDisplayDomElement(domElementId,text,domElementDisplayMode) {
+function updateTextAndDisplayDomElement(
+  domElementId,
+  text,
+  domElementDisplayMode
+) {
+  console.log('updateTextAndDisplayDomElement', arguments)
 
-  console.log("updateTextAndDisplayDomElement", arguments);
-
-  document.getElementById(domElementId).innerText = text; 
-  document.getElementById(domElementId).style.display = domElementDisplayMode;
-
+  document.getElementById(domElementId).innerText = text
+  document.getElementById(domElementId).style.display = domElementDisplayMode
 }
-
 
 /**
  * Title: hide dom element
@@ -98,13 +94,10 @@ function updateTextAndDisplayDomElement(domElementId,text,domElementDisplayMode)
  *
  */
 function hideElement(domElementId) {
+  console.log('hideElement', arguments)
 
-	console.log("hideElement", arguments);
-
-	document.getElementById(domElementId).style.display = "none";
+  document.getElementById(domElementId).style.display = 'none'
 }
-
-
 
 /**
  * Title: display dom element
@@ -123,21 +116,15 @@ function hideElement(domElementId) {
  * Additional notes: none
  *
  */
-function displayElement(domElementId,mode) {
+function displayElement(domElementId, mode) {
+  console.log('displayElement', arguments)
 
-	console.log("displayElement", arguments);
-
-	if(mode!="none") {
-		document.getElementById(domElementId).style.display = mode;
-	}
-	else {
-		console.error("Use hideElement() instead");
-	}
-	
+  if (mode != 'none') {
+    document.getElementById(domElementId).style.display = mode
+  } else {
+    console.error('Use hideElement() instead')
+  }
 }
-
-
-
 
 /**
  * Title: hide html of child elements
@@ -146,7 +133,7 @@ function displayElement(domElementId,mode) {
  *
  * Control-flow summary:  iterate through the childs of an element, then for each child set child.style.display = "none"
  *
- * @param {string} domElementId  the id of the dom element 
+ * @param {string} domElementId  the id of the dom element
  *
  * Returns {void}
  *
@@ -157,23 +144,20 @@ function displayElement(domElementId,mode) {
  */
 
 function hideChildElements(domElementId) {
+  console.log('hideChildElements', arguments)
 
-	console.log("hideChildElements", arguments);
-
-	const parentElement = document.getElementById(domElementId);
-	for (const child of parentElement.children) {
-		child.style.display = "none";
-	}
-
+  const parentElement = document.getElementById(domElementId)
+  for (const child of parentElement.children) {
+    child.style.display = 'none'
+  }
 }
-
 
 /**
  * Title: populate element with participant/file info
  *
  * Description: populate (select) element with participant/file info
  *
- * @param {string} targetDomId  id of the dom element to populate 
+ * @param {string} targetDomId  id of the dom element to populate
  *
  * Returns {void}
  *
@@ -183,27 +167,25 @@ function hideChildElements(domElementId) {
  *
  */
 async function populateParticipantFileSelect(targetDomId) {
-  
-   console.log("populateParticipantFileSelect",arguments);
+  console.log('populateParticipantFileSelect', arguments)
 
-   var pariticipantFileSelect = document.getElementById(targetDomId);
+  var pariticipantFileSelect = document.getElementById(targetDomId)
 
-   if(pariticipantFileSelect.options.length==0 || (pariticipantFileSelect.options.length==1 && pariticipantFileSelect.options[0].value=="") ) {
+  if (
+    pariticipantFileSelect.options.length == 0 ||
+    (pariticipantFileSelect.options.length == 1 &&
+      pariticipantFileSelect.options[0].value == '')
+  ) {
+    const statesInfo = await window.analysis.getStatesInfo()
 
-      const statesInfo = await window.analysis.getStatesInfo();
-
-      for (const [key, participantID] of Object.entries(statesInfo)) {
-
-          var opt = document.createElement('option');
-          opt.value = key;
-          opt.innerHTML = participantID + " ("+key+")";
-          pariticipantFileSelect.appendChild(opt);       
-      }
-
-   }
-
+    for (const [key, participantID] of Object.entries(statesInfo)) {
+      var opt = document.createElement('option')
+      opt.value = key
+      opt.innerHTML = participantID + ' (' + key + ')'
+      pariticipantFileSelect.appendChild(opt)
+    }
+  }
 }
-
 
 /**
  * Title: get select values
@@ -220,28 +202,26 @@ async function populateParticipantFileSelect(targetDomId) {
  * Additional notes: none
  *
  */
-function getSelectValues(selectId,outType) {
+function getSelectValues(selectId, outType) {
   const select = document.getElementById(selectId)
-  var result = [];
-  var options = select && select.options;
-  var opt;
+  var result = []
+  var options = select && select.options
+  var opt
 
-  if(outType!="value" && outType!="text"){
-  	console.error("unsuported outType", outType);
-  	return null;
+  if (outType != 'value' && outType != 'text') {
+    console.error('unsuported outType', outType)
+    return null
   }
 
-  for (var i=0, iLen=options.length; i<iLen; i++) {
-    opt = options[i];
+  for (var i = 0, iLen = options.length; i < iLen; i++) {
+    opt = options[i]
 
     if (opt.selected) {
-      result.push(opt[outType]);
+      result.push(opt[outType])
     }
   }
-  return result;
+  return result
 }
-
-
 
 /**
  * Title: update user configuration
@@ -258,14 +238,27 @@ function getSelectValues(selectId,outType) {
  *
  */
 function updateShownUserConfig(userConfig) {
-   console.log("updateShownUserConfig",arguments);
+  console.log('updateShownUserConfig', arguments)
 
-   document.getElementById("user-config-content").innerHTML = "";
+  document.getElementById('user-config-content').innerHTML = ''
 
-   for (const [key, value] of Object.entries(userConfig)) {
-      document.getElementById("user-config-content").innerHTML += "<span class=key>"+ key + "</span>: <span class=value>" + value + "</span><br>";  
-   }
+  for (const [key, value] of Object.entries(userConfig)) {
+    document.getElementById('user-config-content').innerHTML +=
+      '<span class=key>' +
+      key +
+      '</span>: <span class=value>' +
+      value +
+      '</span><br>'
+  }
 }
 
-
-export{moveFromTo,updateTextAndDisplayDomElement,hideElement,hideChildElements,displayElement,populateParticipantFileSelect,getSelectValues,updateShownUserConfig}
+export {
+  moveFromTo,
+  updateTextAndDisplayDomElement,
+  hideElement,
+  hideChildElements,
+  displayElement,
+  populateParticipantFileSelect,
+  getSelectValues,
+  updateShownUserConfig,
+}

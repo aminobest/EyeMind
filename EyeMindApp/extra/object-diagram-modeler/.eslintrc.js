@@ -1,0 +1,10 @@
+module.exports = {
+  extends: ['plugin:bpmn-io/es6', '../../.eslintrc.js'],
+  env: {
+    browser: true,
+  },
+  globals: {
+    Promise: true,
+    Sentry: true,
+  },
+}

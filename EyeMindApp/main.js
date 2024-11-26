@@ -20,58 +20,55 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-
-const {app, BrowserWindow, webFrame  } = require('electron')
+const { app, BrowserWindow, webFrame } = require('electron')
 const path = require('path')
 
-
-const {windowListeners} = require('./listeners/window');
-const {fixationFilterListeners, shutdownFixationFilterServer} = require('./listeners/fixation-filter');
-const {analysisListeners} = require('./listeners/analysis');
-const {fileSetupListener} = require('./listeners/files-setup');
-const {downloadListener} = require('./listeners/download');
-const {eyeTrackerListeners} = require('./listeners/eye-tracker');
-const {stateListeners} = require('./listeners/state');
-const {sessionListeners} = require('./listeners/session');
-const {testListeners} = require('./listeners/test');
+const { windowListeners } = require('./listeners/window')
+const {
+  fixationFilterListeners,
+  shutdownFixationFilterServer,
+} = require('./listeners/fixation-filter')
+const { analysisListeners } = require('./listeners/analysis')
+const { fileSetupListener } = require('./listeners/files-setup')
+const { downloadListener } = require('./listeners/download')
+const { eyeTrackerListeners } = require('./listeners/eye-tracker')
+const { stateListeners } = require('./listeners/state')
+const { sessionListeners } = require('./listeners/session')
+const { testListeners } = require('./listeners/test')
 
 // Create the browser window.
-function createWindow () {
-
+function createWindow() {
   const mainWindow = new BrowserWindow({
-     // fullscreen: true,
+    // fullscreen: true,
     // resizable: false,
-     autoHideMenuBar: true,
-     title: "EyeMind",
-     show: false,
-     ///frame: false,
-     
+    autoHideMenuBar: true,
+    title: 'EyeMind',
+    show: false,
+    ///frame: false,
+
     webPreferences: {
       nodeIntegration: true,
-      preload:  path.join(__dirname, 'preload.js')
-    }
+      preload: path.join(__dirname, 'preload.js'),
+    },
   })
 
-  mainWindow.maximize();
-  mainWindow.show();
-
+  mainWindow.maximize()
+  mainWindow.show()
 
   // used for the pop up windows
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-  if (url === 'about:blank') {
-    return {
-      action: 'allow',
-      overrideBrowserWindowOptions: {
-        frame: false,
-        fullscreen : false,
-        backgroundColor: '#E7EAED',
+    if (url === 'about:blank') {
+      return {
+        action: 'allow',
+        overrideBrowserWindowOptions: {
+          frame: false,
+          fullscreen: false,
+          backgroundColor: '#E7EAED',
+        },
       }
     }
-  }
-  return { action: 'deny' }
-});
-
-
+    return { action: 'deny' }
+  })
 
   // and load the index.html of the app.
   mainWindow.loadFile('public/index.html')
@@ -101,14 +98,8 @@ function createWindow () {
   sessionListeners()
 
   // initiate initiate test listeners
-  testListeners();
-
-
+  testListeners()
 }
-
-
-
-
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
@@ -123,16 +114,12 @@ app.whenReady().then(() => {
   })
 })
 
-
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on('window-all-closed', async function () {
+  await shutdownFixationFilterServer()
 
-   await shutdownFixationFilterServer();
-
-    // quit electron app
-    if (process.platform !== 'darwin') app.quit()
+  // quit electron app
+  if (process.platform !== 'darwin') app.quit()
 })
-
-

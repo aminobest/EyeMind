@@ -20,13 +20,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-
-var state = null;
+var state = null
 
 /**
  * Title: getState.
  *
- * Description: getter 
+ * Description: getter
  *
  * Control-flow summary: return state
  *
@@ -40,15 +39,15 @@ var state = null;
  *
  */
 function getState() {
-	return state;
+  return state
 }
 
 /**
  * Title: SetState.
  *
- * Description: setter 
+ * Description: setter
  *
- * Control-flow summary: set state (i.e., client state) to newState 
+ * Control-flow summary: set state (i.e., client state) to newState
  *
  * @param {object} newState
  *
@@ -60,15 +59,15 @@ function getState() {
  *
  */
 function setState(newState) {
-	state = newState;
+  state = newState
 }
 
 /**
  * Title: Load server state into client.
  *
- * Description: get the state object from the server and assign it to state (i..e, client state) 
+ * Description: get the state object from the server and assign it to state (i..e, client state)
  *
- * Control-flow summary: get the state object from the server and assign it to state (i..e, client state) 
+ * Control-flow summary: get the state object from the server and assign it to state (i..e, client state)
  *
  * @param {void} . .
  *
@@ -80,8 +79,7 @@ function setState(newState) {
  *
  */
 async function loadServerStateIntoClient() {
-  setState(await window.state.getState());
+  setState(await window.state.getState())
 }
 
-
-export {getState, setState, loadServerStateIntoClient}
+export { getState, setState, loadServerStateIntoClient }

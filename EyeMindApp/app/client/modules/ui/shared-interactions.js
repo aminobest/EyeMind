@@ -20,43 +20,38 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
+/*  Shared interactions between data collection and anaylsis  */
 
-
-/*  Shared interactions between data collection and anaylsis  */ 
-
-
-import {eyeTrackingModeInteraction} from './data-collection'
-import {analysisModeInteraction} from './analysis'
-import {infoAlert,errorAlert} from '../utils/utils'
-import {getState} from '../dataModels/state'
-import $ from 'jquery';
-
+import { eyeTrackingModeInteraction } from './data-collection'
+import { analysisModeInteraction } from './analysis'
+import { infoAlert, errorAlert } from '../utils/utils'
+import { getState } from '../dataModels/state'
+import $ from 'jquery'
 
 /**
  * Title: Mode selection listeners.
  *
- * Description: Definition of event listeners to guide the app control-flow depending on whether the user chooses the eye-tracking mode or the analysis mode 
+ * Description: Definition of event listeners to guide the app control-flow depending on whether the user chooses the eye-tracking mode or the analysis mode
  *
- * Control-flow summary: event listeners associated to different buttons 
+ * Control-flow summary: event listeners associated to different buttons
  *
  * @param {void} . .
  *
  * Returns {void}
  *
-*
+ *
  *
  * Additional notes: none
  *
  */
 function modeSelectionListeners() {
-  console.log("modeSelectionListeners", arguments);
+  console.log('modeSelectionListeners', arguments)
 
-  document.getElementById("eye-tracking").onclick = () => {eyeTrackingModeInteraction()};
-  document.getElementById("analysis").onclick = () => analysisModeInteraction();
-
+  document.getElementById('eye-tracking').onclick = () => {
+    eyeTrackingModeInteraction()
+  }
+  document.getElementById('analysis').onclick = () => analysisModeInteraction()
 }
-
-
 
 /**
  * Title: load models
@@ -72,36 +67,32 @@ function modeSelectionListeners() {
  *
  */
 function loadModels() {
+  console.log('loadModels', arguments)
 
-    console.log("loadModels", arguments);
+  var state = getState()
 
-    var state = getState();
+  /// move to loaded-content-view
+  document.getElementById('import-view').style.display = 'none'
+  document.getElementById('loaded-content-view').style.display = 'flex'
 
-    /// move to loaded-content-view
-    document.getElementById("import-view").style.display = "none";
-    document.getElementById("loaded-content-view").style.display = "flex";
+  // display index-tab in data-collection mode
+  if (state.mode == 'data-collection') {
+    document.getElementById('index-tab').style.display = 'block'
+  }
 
+  /// set tab scroll button events
+  const buttonRight = document.getElementById('to-tab-right')
+  const buttonLeft = document.getElementById('to-tab-left')
+  const scrollDistance = 20
 
-    // display index-tab in data-collection mode
-    if(state.mode=="data-collection") {
-      document.getElementById("index-tab").style.display = "block";
-    }
-    
-    /// set tab scroll button events
-    const buttonRight = document.getElementById('to-tab-right');
-    const buttonLeft = document.getElementById('to-tab-left');
-    const scrollDistance = 20 
+  buttonRight.onclick = function () {
+    document.getElementById('nav-tabs').scrollLeft += scrollDistance
+  }
+  buttonLeft.onclick = function () {
+    document.getElementById('nav-tabs').scrollLeft -= scrollDistance
+  }
 
-    buttonRight.onclick = function () {
-      document.getElementById('nav-tabs').scrollLeft += scrollDistance;
-    };
-    buttonLeft.onclick = function () {
-      document.getElementById('nav-tabs').scrollLeft -= scrollDistance;
-    };
-
-    return true;
-
-    
+  return true
 }
 
 /**
@@ -118,13 +109,15 @@ function loadModels() {
  *
  */
 function closeModalOutsideClickInteraction(event) {
+  console.log('closeModalOutsideClickInteraction', arguments)
 
-  console.log("closeModalOutsideClickInteraction", arguments);
-
-  if (event.target == document.getElementById('startET-modal') || event.target == document.getElementById('heatmap-settings-modal') || event.target == document.getElementById('download-modal')) {
-    event.target.style.display = "none";
+  if (
+    event.target == document.getElementById('startET-modal') ||
+    event.target == document.getElementById('heatmap-settings-modal') ||
+    event.target == document.getElementById('download-modal')
+  ) {
+    event.target.style.display = 'none'
   }
 }
 
-
-export {modeSelectionListeners, loadModels, closeModalOutsideClickInteraction}
+export { modeSelectionListeners, loadModels, closeModalOutsideClickInteraction }

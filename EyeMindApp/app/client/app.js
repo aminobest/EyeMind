@@ -20,40 +20,34 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-
-
-import {handleWindowRefresh,takeSnapshotOnWindowResize,takeSnapshotOnWindowMovement,testListeners,DisableCriticalKeys} from './modules/ui/window-events'
-import {modeSelectionListeners,closeModalOutsideClickInteraction} from './modules/ui/shared-interactions'
-import {loadServerStateIntoClient} from './modules/dataModels/state'
-import $ from 'jquery';
-
-
+import {
+  handleWindowRefresh,
+  takeSnapshotOnWindowResize,
+  takeSnapshotOnWindowMovement,
+  testListeners,
+  DisableCriticalKeys,
+} from './modules/ui/window-events'
+import {
+  modeSelectionListeners,
+  closeModalOutsideClickInteraction,
+} from './modules/ui/shared-interactions'
+import { loadServerStateIntoClient } from './modules/dataModels/state'
+import $ from 'jquery'
 
 /// load the server state ás a client state then
-loadServerStateIntoClient().then( () => {
+loadServerStateIntoClient().then(() => {
+  // call window event listeners
+  DisableCriticalKeys()
+  handleWindowRefresh()
+  takeSnapshotOnWindowResize()
+  takeSnapshotOnWindowMovement()
 
+  // Mode selection listeners (i.e., data collection or analysis)
+  modeSelectionListeners()
 
+  // test listener
+  testListeners()
 
-	// call window event listeners
-	DisableCriticalKeys();
-	handleWindowRefresh();
-	takeSnapshotOnWindowResize();
-	takeSnapshotOnWindowMovement();
-
-	// Mode selection listeners (i.e., data collection or analysis)
-	modeSelectionListeners();
-
-	// test listener
-	testListeners();
-
-	// Event listener for clicks outside the modal area
-	window.onclick = closeModalOutsideClickInteraction;
-
-} )
-
-
-
-
-
-
-
+  // Event listener for clicks outside the modal area
+  window.onclick = closeModalOutsideClickInteraction
+})

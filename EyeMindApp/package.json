@@ -10,7 +10,8 @@
     "build": "webpack --mode production",
     "start:dev": "npm run build && npm start",
     "test": "npx playwright test test/tests/playwright/",
-    "test-temp": "npx playwright test test/tests/playwright/import.test.ts"
+    "test-temp": "npx playwright test test/tests/playwright/import.test.ts",
+    "lint": "eslint \"**/*.js\" --fix"
   },
   "repository": {
     "type": "git",
@@ -25,8 +26,14 @@
   },
   "license": "MIT",
   "devDependencies": {
+    "@eslint/js": "^9.10.0",
     "@playwright/test": "^1.26.0",
-    "electron": "^18.0.3"
+    "@types/eslint__js": "^8.42.3",
+    "electron": "^18.0.3",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "prettier": "^3.4.0"
   },
   "dependencies": {
     "bfj": "",
@@ -52,7 +59,7 @@
     "request-promise": "",
     "tls": "",
     "tree-kill": "",
-    "webpack": "^4.46.0",
+    "webpack": "^4.47.0",
     "webpack-cli": "^3.0.8",
     "webpack-dev-server": "^3.1.14"
   }

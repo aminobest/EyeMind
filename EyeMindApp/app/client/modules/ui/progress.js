@@ -22,7 +22,6 @@ SOFTWARE.*/
 
 /* progress */
 
-
 /**
  * Title: update processing message listener
  *
@@ -37,19 +36,16 @@ SOFTWARE.*/
  *
  */
 function updateProcessMessageListener() {
-
-	 window.progress.onUpdateProcessingMessage(async function (args) {
-	 	console.log("onUpdateProcessingMessage", arguments);
-	 	const msg = args[0];
-	 	const externalProgressWindow = args[1];
-     await updateProcessingMessage(msg,externalProgressWindow);
-
-  });
-
+  window.progress.onUpdateProcessingMessage(async function (args) {
+    console.log('onUpdateProcessingMessage', arguments)
+    const msg = args[0]
+    const externalProgressWindow = args[1]
+    await updateProcessingMessage(msg, externalProgressWindow)
+  })
 }
 
 /**
- * Title: update processing message 
+ * Title: update processing message
  *
  * Description: update the content of documentContainer.getElementById("wait-progress")
  *
@@ -62,29 +58,24 @@ function updateProcessMessageListener() {
  * Additional notes: none
  *
  */
-async function updateProcessingMessage(msg,container) {
+async function updateProcessingMessage(msg, container) {
+  console.log('updateProcessingMessage', arguments)
 
-   console.log("updateProcessingMessage",arguments);
+  var documentContainer
 
-  var documentContainer;
-
-  if(typeof container=='string' && container!='') {
-  	documentContainer=window.externalProgressWindows[container].document;
+  if (typeof container == 'string' && container != '') {
+    documentContainer = window.externalProgressWindows[container].document
+  } else {
+    documentContainer = document
   }
-  else { 
-  	documentContainer = document;
-  }
-  
-  documentContainer.getElementById("wait-progress").innerHTML = msg;
- 
-  await delay(window.globalParameters.DELAY_FOR_RENDRING);
 
+  documentContainer.getElementById('wait-progress').innerHTML = msg
+
+  await delay(window.globalParameters.DELAY_FOR_RENDRING)
 }
 
-
-
 /**
- * Title: delay 
+ * Title: delay
  *
  * Description: sleep for some milliseconds
  *
@@ -97,21 +88,19 @@ async function updateProcessingMessage(msg,container) {
  *
  */
 function delay(delayInms) {
+  console.log('delay', arguments)
 
-  console.log("delay",arguments);
-
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     setTimeout(() => {
-      resolve(2);
-    }, delayInms);
-  });
+      resolve(2)
+    }, delayInms)
+  })
 }
 
-
 /**
- * Title: show general waiting screen 
+ * Title: show general waiting screen
  *
- * Description: show general waiting screen 
+ * Description: show general waiting screen
  *
  * @param {string} text to display in document.getElementById("wait-title")
  * @param {string} show id of the DOM element to show
@@ -123,28 +112,24 @@ function delay(delayInms) {
  * Additional notes: none
  *
  */
-async function showGeneralWaitingScreen(text,show,hide) {
+async function showGeneralWaitingScreen(text, show, hide) {
+  console.log('showGeneralWaitingScreen', arguments)
 
-	console.log("showGeneralWaitingScreen",arguments);
+  if (text != null) {
+    document.getElementById('wait-title').innerHTML = text
+  }
 
-	if(text!=null) {
-		document.getElementById("wait-title").innerHTML = text;
-	}
-	
+  document.getElementById(hide).style.display = 'none'
+  document.getElementById(show).style.display =
+    show == 'all-content' ? 'inline-block' : 'block' // specific display types based on the element can be implemented here
 
-
-	document.getElementById(hide).style.display="none";
-	document.getElementById(show).style.display= show=="all-content" ? "inline-block" :"block"; // specific display types based on the element can be implemented here 
-
-	await delay(window.globalParameters.DELAY_FOR_RENDRING);
+  await delay(window.globalParameters.DELAY_FOR_RENDRING)
 }
 
-
-
 /**
- * Title: hide general waiting screen 
+ * Title: hide general waiting screen
  *
- * Description: hide general waiting screen 
+ * Description: hide general waiting screen
  *
  * @param {string} show id of the DOM element to show
  * @param {string} hide id of the DOM element to hide
@@ -155,17 +140,22 @@ async function showGeneralWaitingScreen(text,show,hide) {
  * Additional notes: none
  *
  */
-async function hideGeneralWaitingScreen(show,hide) {
+async function hideGeneralWaitingScreen(show, hide) {
+  console.log('hideGeneralWaitingScreen', arguments)
 
-	console.log("hideGeneralWaitingScreen",arguments);
+  document.getElementById(show).style.display =
+    show == 'all-content' ? 'inline-block' : 'block' // specific display types based on the element can be implemented here
+  document.getElementById(hide).style.display = 'none'
 
-	document.getElementById(show).style.display= show=="all-content" ? "inline-block" :"block"; // specific display types based on the element can be implemented here 
-	document.getElementById(hide).style.display="none";
+  document.getElementById('wait-title').innerHTML = ''
+  document.getElementById('wait-progress').innerHTML = ''
 
-	document.getElementById("wait-title").innerHTML = "";
-	document.getElementById("wait-progress").innerHTML = "";
-
-	await delay(window.globalParameters.DELAY_FOR_RENDRING);
+  await delay(window.globalParameters.DELAY_FOR_RENDRING)
 }
 
-export{updateProcessingMessage,updateProcessMessageListener, showGeneralWaitingScreen,hideGeneralWaitingScreen}
+export {
+  updateProcessingMessage,
+  updateProcessMessageListener,
+  showGeneralWaitingScreen,
+  hideGeneralWaitingScreen,
+}

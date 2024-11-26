@@ -20,137 +20,186 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-const request = require('request-promise');
-const {globalParameters} =  require('../../../../globals.js');
-const {calculateProgress} = require('../utils/utils');
-const {summerizedFixationLog} = require('../analysis/analysis')
-const {addState,getStates} = require('../dataModels/state')
+const request = require('request-promise')
+const { globalParameters } = require('../../../../globals.js')
+const { calculateProgress } = require('../utils/utils')
+const { summerizedFixationLog } = require('../analysis/analysis')
+const { addState, getStates } = require('../dataModels/state')
 
+async function fixationFilter(fixationFilterSettings, mainWindow) {
+  // note: the fixation filter uses the corrected data if state.processedGazeData.areGazesCorrected = true; (see R code)
 
-async function fixationFilter(fixationFilterSettings,mainWindow) {
-    // note: the fixation filter uses the corrected data if state.processedGazeData.areGazesCorrected = true; (see R code)
+  // console.log("fixationFilter function",arguments);
 
-    // console.log("fixationFilter function",arguments);
+  // get states
+  var states = getStates()
 
-    // get states
-    var states = getStates();
+  // apply fixation filter to the states
+  for (const [id, state] of Object.entries(states)) {
+    await applyFixationFilter(fixationFilterSettings, id, state, mainWindow)
+  }
 
-    // apply fixation filter to the states
-     for (const [id, state] of Object.entries(states)) {
-      await applyFixationFilter(fixationFilterSettings,id,state,mainWindow);
-    }
+  // notify client on completion
+  const msg = 'fixation filter completed'
+  const sucess = true
+  mainWindow.webContents.send('completeFixationFilterListener', msg, sucess)
+}
 
-    // notify client on completion
-    const msg = "fixation filter completed";
-    const sucess = true;
-    mainWindow.webContents.send('completeFixationFilterListener',msg,sucess);
-  
-
-} 
-
-
-async function applyFixationFilter(fixationFilterSettings,id,state,mainWindow) {
-
+async function applyFixationFilter(
+  fixationFilterSettings,
+  id,
+  state,
+  mainWindow
+) {
   /// add the fixationFilterSettings to state
   state.processedGazeData.fixationFilterData = fixationFilterSettings
 
-  const partialCommunicationUriToRerver = globalParameters.COMMUNICATION_HOST_TO_R_SERVER+":"+globalParameters.R_PORT;
-  var params = {};
-  
+  const partialCommunicationUriToRerver =
+    globalParameters.COMMUNICATION_HOST_TO_R_SERVER +
+    ':' +
+    globalParameters.R_PORT
+  var params = {}
+
   params.xScreenDim = state.processedGazeData.xScreenDim
   params.yScreenDim = state.processedGazeData.yScreenDim
   params.screenDistance = state.processedGazeData.screenDistance
   params.monitorSize = state.processedGazeData.monitorSize
   params.areGazesCorrected = state.processedGazeData.areGazesCorrected
-  params.fixationFilterData = state.processedGazeData.fixationFilterData;
+  params.fixationFilterData = state.processedGazeData.fixationFilterData
 
   /// SetParamData request
-  mainWindow.webContents.send('updateProcessingMessage',"Processing "+id+"... <br><br> Sending fixation filter parameters.",'');
+  mainWindow.webContents.send(
+    'updateProcessingMessage',
+    'Processing ' + id + '... <br><br> Sending fixation filter parameters.',
+    ''
+  )
 
-  var message = { "params": params};
+  var message = { params: params }
   var communication = {
-  method: globalParameters.COMMUNICATION_METHOD_TO_R_SERVER,
-  uri: partialCommunicationUriToRerver+'/SetParamData', 
-  body: message,
-  json: true
-  };
-  await request(communication);
+    method: globalParameters.COMMUNICATION_METHOD_TO_R_SERVER,
+    uri: partialCommunicationUriToRerver + '/SetParamData',
+    body: message,
+    json: true,
+  }
+  await request(communication)
 
   // OpenDataTransfer request
-  mainWindow.webContents.send('updateProcessingMessage',"Processing "+id+"... <br><br> Initiating the transfer of the data to the server.",'');
+  mainWindow.webContents.send(
+    'updateProcessingMessage',
+    'Processing ' +
+      id +
+      '... <br><br> Initiating the transfer of the data to the server.',
+    ''
+  )
 
   communication = {
     method: globalParameters.COMMUNICATION_METHOD_TO_R_SERVER,
-    uri: partialCommunicationUriToRerver+'/OpenDataTransferETR', 
+    uri: partialCommunicationUriToRerver + '/OpenDataTransferETR',
     body: null,
-    json: true
-    };
-  await request(communication);
+    json: true,
+  }
+  await request(communication)
 
+  /// send gaze data in folds
+  mainWindow.webContents.send(
+    'updateProcessingMessage',
+    'Processing ' + id + '... <br><br> Sending the data to the server',
+    ''
+  )
 
-  /// send gaze data in folds 
-  mainWindow.webContents.send('updateProcessingMessage',"Processing "+id+"... <br><br> Sending the data to the server",'');
-
-  for(let i=0; i<state.processedGazeData.gazeData.length; i = i+globalParameters.DATA_FRAGMENT_SIZE) {
-    const dataFragment = state.processedGazeData.gazeData.slice(i, i+globalParameters.DATA_FRAGMENT_SIZE);
-    message = { "dataFragment": dataFragment};
+  for (
+    let i = 0;
+    i < state.processedGazeData.gazeData.length;
+    i = i + globalParameters.DATA_FRAGMENT_SIZE
+  ) {
+    const dataFragment = state.processedGazeData.gazeData.slice(
+      i,
+      i + globalParameters.DATA_FRAGMENT_SIZE
+    )
+    message = { dataFragment: dataFragment }
     communication = {
-    method: globalParameters.COMMUNICATION_METHOD_TO_R_SERVER,
-    uri: partialCommunicationUriToRerver+'/TransferDataFragmentETR', 
-    body: message,
-    json: true
-    };
-    await request(communication);
-    mainWindow.webContents.send('updateProcessingMessage',"Processing "+id+"... <br><br> Sending the data to the server: "+calculateProgress(i,state.processedGazeData.gazeData.length-1)+"% complete.",'');
+      method: globalParameters.COMMUNICATION_METHOD_TO_R_SERVER,
+      uri: partialCommunicationUriToRerver + '/TransferDataFragmentETR',
+      body: message,
+      json: true,
+    }
+    await request(communication)
+    mainWindow.webContents.send(
+      'updateProcessingMessage',
+      'Processing ' +
+        id +
+        '... <br><br> Sending the data to the server: ' +
+        calculateProgress(i, state.processedGazeData.gazeData.length - 1) +
+        '% complete.',
+      ''
+    )
   }
 
-
   // apply fixation filter
-  mainWindow.webContents.send('updateProcessingMessage',"Processing "+id+"... <br><br> Applying the fixation filter. This operation can take several minutes.",'');
+  mainWindow.webContents.send(
+    'updateProcessingMessage',
+    'Processing ' +
+      id +
+      '... <br><br> Applying the fixation filter. This operation can take several minutes.',
+    ''
+  )
   communication = {
     method: globalParameters.COMMUNICATION_METHOD_TO_R_SERVER,
-    uri: partialCommunicationUriToRerver+'/ApplyFilter', 
+    uri: partialCommunicationUriToRerver + '/ApplyFilter',
     body: null,
-    };
+  }
 
-  await request(communication);
+  await request(communication)
 
   // OpenDataTransferRTE request
-  mainWindow.webContents.send('updateProcessingMessage',"Processing "+id+"... <br><br> Transfering data to the client.",'');
+  mainWindow.webContents.send(
+    'updateProcessingMessage',
+    'Processing ' + id + '... <br><br> Transfering data to the client.',
+    ''
+  )
 
   communication = {
     method: globalParameters.COMMUNICATION_METHOD_TO_R_SERVER,
-    uri: partialCommunicationUriToRerver+'/OpenDataTransferRTE', 
+    uri: partialCommunicationUriToRerver + '/OpenDataTransferRTE',
     body: null,
-    json: true
-    };
+    json: true,
+  }
 
-  const response = await request(communication);
+  const response = await request(communication)
 
-  const fullFixationFilterOutput = [];
-  const dataSize = response[0];
+  const fullFixationFilterOutput = []
+  const dataSize = response[0]
 
   /// receive data in folds
-  for(let i=0; i<dataSize; i = i+globalParameters.DATA_FRAGMENT_SIZE) {
+  for (let i = 0; i < dataSize; i = i + globalParameters.DATA_FRAGMENT_SIZE) {
+    const start = i
+    const end =
+      start + globalParameters.DATA_FRAGMENT_SIZE <= dataSize
+        ? start + globalParameters.DATA_FRAGMENT_SIZE
+        : dataSize
 
-    const start = i;
-    const end = (start+globalParameters.DATA_FRAGMENT_SIZE) <=dataSize? start+globalParameters.DATA_FRAGMENT_SIZE: dataSize;
-
-    const req = { 'start': start, 'end': end  };
+    const req = { start: start, end: end }
     const com = {
-    method: globalParameters.COMMUNICATION_METHOD_TO_R_SERVER,
-    uri: partialCommunicationUriToRerver+'/TransferDataFragmentRTE',
-    body: req,
-    json: true
-        };
+      method: globalParameters.COMMUNICATION_METHOD_TO_R_SERVER,
+      uri: partialCommunicationUriToRerver + '/TransferDataFragmentRTE',
+      body: req,
+      json: true,
+    }
 
-    const res = await request(com);
+    const res = await request(com)
 
     // add res to fullFixationFilterOutput
-    fullFixationFilterOutput.push.apply(fullFixationFilterOutput,res); 
-        
-    mainWindow.webContents.send('updateProcessingMessage',"Processing "+id+"... <br><br> Transfering data to the client: "+calculateProgress(i,dataSize-1)+"% complete.",'');
+    fullFixationFilterOutput.push.apply(fullFixationFilterOutput, res)
 
+    mainWindow.webContents.send(
+      'updateProcessingMessage',
+      'Processing ' +
+        id +
+        '... <br><br> Transfering data to the client: ' +
+        calculateProgress(i, dataSize - 1) +
+        '% complete.',
+      ''
+    )
   }
 
   //console.log("fullFixationFilterOutput",fullFixationFilterOutput);
@@ -158,12 +207,14 @@ async function applyFixationFilter(fixationFilterSettings,id,state,mainWindow) {
   // integrate the data in state.processedGazeData
 
   // Note: the saccade data is generated by the R server, but not used for now
-  /// state.processedGazeData.fullFixationFilterOutput = fullFixationFilterOutput // optional 
+  /// state.processedGazeData.fullFixationFilterOutput = fullFixationFilterOutput // optional
 
-  state.processedGazeData.fixationData = summerizedFixationLog(fullFixationFilterOutput,state.processedGazeData.fixationFilterData.fixationMappingHandling,state.processedGazeData.areGazesCorrected);
-  state.processedGazeData.fixationFilterData.status = "complete";
-
-
+  state.processedGazeData.fixationData = summerizedFixationLog(
+    fullFixationFilterOutput,
+    state.processedGazeData.fixationFilterData.fixationMappingHandling,
+    state.processedGazeData.areGazesCorrected
+  )
+  state.processedGazeData.fixationFilterData.status = 'complete'
 }
 
-exports.fixationFilter = fixationFilter;
+exports.fixationFilter = fixationFilter

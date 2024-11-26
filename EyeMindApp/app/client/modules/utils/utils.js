@@ -20,82 +20,66 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
+function readFileContent(file, callback) {
+  var reader = new FileReader()
+  reader.onload = async function (e) {
+    // get file content
+    const content = e.target.result
+    // call back function
+    await callback(content)
+  }
 
-
-function readFileContent(file,callback) {
-
-        var reader = new FileReader();
-        reader.onload = async function(e) {
-          // get file content
-          const content = e.target.result;
-          // call back function
-          await callback(content);
-        };
-
-        reader.readAsText(file);
+  reader.readAsText(file)
 }
-
-
 
 function infoAlert(message) {
-  if(window.hasOwnProperty('electron')) {
-    window.electron.message("info",message);
+  if (window.hasOwnProperty('electron')) {
+    window.electron.message('info', message)
+  } else {
+    alert(msg)
   }
-  else {
-    alert(msg);
-  }
-
 }
-
 
 function errorAlert(message) {
-
- if(window.hasOwnProperty('electron')) {
-      window.electron.message("error",message);
+  if (window.hasOwnProperty('electron')) {
+    window.electron.message('error', message)
+  } else {
+    alert(msg)
   }
- else {
-  alert(msg);
-  }
-
 }
-
-
 
 function assign(obj, prop, value) {
-    if (typeof prop === "string")
-        prop = prop.split(".");
+  if (typeof prop === 'string') prop = prop.split('.')
 
-    if (prop.length > 1) {
-        var e = prop.shift();
-        assign(obj[e] =
-                 Object.prototype.toString.call(obj[e]) === "[object Object]"
-                 ? obj[e]
-                 : {},
-               prop,
-               value);
-    } else
-        obj[prop[0]] = value;
+  if (prop.length > 1) {
+    var e = prop.shift()
+    assign(
+      (obj[e] =
+        Object.prototype.toString.call(obj[e]) === '[object Object]'
+          ? obj[e]
+          : {}),
+      prop,
+      value
+    )
+  } else obj[prop[0]] = value
 }
 
-
-
-
-function cancelDefault (e) {
-
-    // console.log("cancelDefault",arguments);
-    e.preventDefault();
-    e.stopPropagation();
-
-  }
-
+function cancelDefault(e) {
+  // console.log("cancelDefault",arguments);
+  e.preventDefault()
+  e.stopPropagation()
+}
 
 // can be removed if no more used in the client side
-function calculateProgress(i,max) {
-
-   const progress = (i/max)*100;
-   return  Math.round(progress * 100) / 100;
-      
+function calculateProgress(i, max) {
+  const progress = (i / max) * 100
+  return Math.round(progress * 100) / 100
 }
 
-
-export{cancelDefault, calculateProgress,infoAlert,errorAlert,readFileContent};
+export {
+  cancelDefault,
+  calculateProgress,
+  infoAlert,
+  errorAlert,
+  readFileContent,
+}

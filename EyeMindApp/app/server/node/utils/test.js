@@ -1,7 +1,7 @@
-const {getState} = require('../dataModels/state')
+const { getState } = require('../dataModels/state')
 
 async function getServerState() {
-	return getState();
+  return getState()
 }
 
-exports.getServerState = getServerState;
+exports.getServerState = getServerState

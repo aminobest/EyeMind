@@ -23,17 +23,13 @@ SOFTWARE.*/
 var generalModelsRegistry = {}
 
 function getGeneralModelsRegistry() {
-	return generalModelsRegistry;
+  return generalModelsRegistry
 }
 
-function addModel(fileid,generalModelRegistry) {
+function addModel(fileid, generalModelRegistry) {
+  generalModelsRegistry[fileid] = generalModelRegistry
 
-	generalModelsRegistry[fileid] = generalModelRegistry;
-
-	console.log("new generalModelsRegistry",generalModelsRegistry);
-
-
-
+  console.log('new generalModelsRegistry', generalModelsRegistry)
 }
 
-export {getGeneralModelsRegistry, addModel}
+export { getGeneralModelsRegistry, addModel }

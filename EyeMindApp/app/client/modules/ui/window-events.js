@@ -20,21 +20,16 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-
 /* Window Events */
 
+import { takesnapshot, stopETInteraction } from './data-collection'
+import { getState } from '../dataModels/state'
+import { openMainTab } from './tabs'
+import { resetModel, resetNavTabsAndTabs } from './canvas'
 
-import {takesnapshot,stopETInteraction} from './data-collection'
-import {getState} from '../dataModels/state'
-import {openMainTab} from './tabs'
-import {resetModel,resetNavTabsAndTabs} from './canvas'
+const { ipcRenderer } = window
 
-const { ipcRenderer } = window;
-
-import $ from 'jquery';
-
-
-
+import $ from 'jquery'
 
 /**
  * Title: Handle window refresh.
@@ -53,21 +48,17 @@ import $ from 'jquery';
  *
  */
 function handleWindowRefresh() {
-  console.log("handleWindowRefresh",arguments);
+  console.log('handleWindowRefresh', arguments)
 
   // remove full screen in case of window refresh
-    window.electron.removeFullScreen();
+  window.electron.removeFullScreen()
 
   // clear sever state in case of window refresh (for data collection)
-    window.state.clearState();
-
+  window.state.clearState()
 
   // clear sever state in case of window refresh (for analysis)
-    window.state.clearStates();
-
-
+  window.state.clearStates()
 }
-
 
 /**
  * Title: Take snapshot when the app window is resized
@@ -86,13 +77,17 @@ function handleWindowRefresh() {
  *
  */
 function takeSnapshotOnWindowResize() {
-  console.log("takeSnapshotOnWindowResize",arguments);
-   window.electron.onBrowserResize(function (message) {
-    console.log("onBrowserResize")
-    takesnapshot(Date.now(),document.body.innerHTML,window.screenX,window.screenY);
-   });
+  console.log('takeSnapshotOnWindowResize', arguments)
+  window.electron.onBrowserResize(function (message) {
+    console.log('onBrowserResize')
+    takesnapshot(
+      Date.now(),
+      document.body.innerHTML,
+      window.screenX,
+      window.screenY
+    )
+  })
 }
-
 
 /**
  * Title: Take snapshot when the app window is moved
@@ -111,14 +106,17 @@ function takeSnapshotOnWindowResize() {
  *
  */
 function takeSnapshotOnWindowMovement() {
-   console.log("takeSnapshotOnWindowMovement",arguments);
+  console.log('takeSnapshotOnWindowMovement', arguments)
 
-    window.electron.onBrowserMovement(function (message) {
-      console.log("onBrowserMovement")
-      takesnapshot(Date.now(),document.body.innerHTML,window.screenX,window.screenY);
-  });
-
-
+  window.electron.onBrowserMovement(function (message) {
+    console.log('onBrowserMovement')
+    takesnapshot(
+      Date.now(),
+      document.body.innerHTML,
+      window.screenX,
+      window.screenY
+    )
+  })
 }
 
 /**
@@ -137,20 +135,16 @@ function takeSnapshotOnWindowMovement() {
  *
  */
 function testListeners() {
-
-  console.log("testListeners",arguments);
+  console.log('testListeners', arguments)
 
   window.clientTests = {}
-  window.clientTests.getClientState = () => getState();
-  window.clientTests.openMainTabInWithinTabLinks = (modelsGroupId) => openMainTab(true,false,modelsGroupId);
-  window.clientTests.resetModel = (fileId) => resetModel(fileId);
-  window.clientTests.resetNavTabsAndTabs = (modelsGroupId) => resetNavTabsAndTabs(modelsGroupId);
-
+  window.clientTests.getClientState = () => getState()
+  window.clientTests.openMainTabInWithinTabLinks = (modelsGroupId) =>
+    openMainTab(true, false, modelsGroupId)
+  window.clientTests.resetModel = (fileId) => resetModel(fileId)
+  window.clientTests.resetNavTabsAndTabs = (modelsGroupId) =>
+    resetNavTabsAndTabs(modelsGroupId)
 }
-
-
-
-
 
 /**
  * Title: disable critical keys
@@ -168,18 +162,19 @@ function testListeners() {
  *
  */
 function DisableCriticalKeys() {
+  console.log('DisableCriticalKeys', arguments)
 
-  console.log("DisableCriticalKeys",arguments);
-
-  window.onkeydown = function(evt) {
-
-     if ((evt.ctrlKey || evt.altKey) &&  evt.keyCode != 82 &&  evt.keyCode != 73)
-     {
-       evt.preventDefault();
-     }
-   }
-
+  window.onkeydown = function (evt) {
+    if ((evt.ctrlKey || evt.altKey) && evt.keyCode != 82 && evt.keyCode != 73) {
+      evt.preventDefault()
+    }
+  }
 }
 
-
-export{handleWindowRefresh,takeSnapshotOnWindowResize,takeSnapshotOnWindowMovement,testListeners,DisableCriticalKeys}
+export {
+  handleWindowRefresh,
+  takeSnapshotOnWindowResize,
+  takeSnapshotOnWindowMovement,
+  testListeners,
+  DisableCriticalKeys,
+}

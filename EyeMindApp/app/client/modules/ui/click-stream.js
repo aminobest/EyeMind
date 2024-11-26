@@ -19,8 +19,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-import {getState} from '../dataModels/state'
-
+import { getState } from '../dataModels/state'
 
 /**
  * Title: send click event to the ET server through the server side
@@ -35,36 +34,36 @@ import {getState} from '../dataModels/state'
  *
  *
  */
-async function sendClickEvent(clickTimestamp,clickedElement) {
+async function sendClickEvent(clickTimestamp, clickedElement) {
+  console.log('sendClickEvent', arguments)
 
-	console.log("sendClickEvent",arguments)
+  var state = getState()
 
-	var state = getState();
+  if (state.isEtOn) {
+    const res = await window.eyeTracker.sendClickEvent(
+      clickTimestamp,
+      clickedElement
+    )
+    if (!res.sucess) {
+      console.error(res.msg)
+    }
 
-	if(state.isEtOn) {
-
-		const res = await window.eyeTracker.sendClickEvent(clickTimestamp, clickedElement);
-		 if(!res.sucess){
-				console.error(res.msg);
-		 }
-
-		// for testing purpose
-	  if(window.hasOwnProperty('clientTests')) {
-	    window.clientTests.lastRelevantClick = {
-	      "clickTimestamp":clickTimestamp,
-	      "clickedElement": clickedElement,
-	    };
-	  }
-
-	}
+    // for testing purpose
+    if (window.hasOwnProperty('clientTests')) {
+      window.clientTests.lastRelevantClick = {
+        clickTimestamp: clickTimestamp,
+        clickedElement: clickedElement,
+      }
+    }
+  }
 }
 
 /**
  * Title: clicks listener
  *
- * Description: iterate through document.querySelectorAll(".click-record") and registerClickEventForLogging() for all DOM elements in document.querySelectorAll(".click-record") 
+ * Description: iterate through document.querySelectorAll(".click-record") and registerClickEventForLogging() for all DOM elements in document.querySelectorAll(".click-record")
  *
- * @param {void} . . 
+ * @param {void} . .
  * Returns {void}
  *
  *
@@ -84,20 +83,19 @@ async function sendClickEvent(clickTimestamp,clickedElement) {
 
 }*/
 
-
 /**
  * Title: register click event for logging
  *
  * Description: send the click event to the eye-tracking server (through the server side)
  *
- * @param {void} . . 
+ * @param {void} . .
  * Returns {void}
  *
  *
  * Additional notes:  some variables are exposed in window.clientTests for testing purpose
  *
  */
- /*
+/*
 function registerClickEventForLogging(el) {
 
 	el.addEventListener("click", async() => {
@@ -130,8 +128,4 @@ function registerClickEventForLogging(el) {
 } 
 */
 
-
-
-
-export{sendClickEvent}
-
+export { sendClickEvent }

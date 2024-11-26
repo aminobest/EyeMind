@@ -30,22 +30,17 @@
  * ```
  */
 
-import {
-  isFunction,
-  forEach,
-  merge
-} from 'min-dash';
+import { isFunction, forEach, merge } from 'min-dash'
 
-import TestContainer from 'mocha-test-container-support';
+import TestContainer from 'mocha-test-container-support'
 
-import Modeler from '../../lib/Modeler';
+import Modeler from '../../lib/Modeler'
 
-var OPTIONS, POSTIT_JS;
+var OPTIONS, POSTIT_JS
 
 export function boostrapPostitJS(PostitJS, diagram, options, locals) {
-
-  return function() {
-    var testContainer;
+  return function () {
+    var testContainer
 
     // Make sure the test container is an optional dependency and we fall back
     // to an empty <div> if it does not exist.
@@ -53,119 +48,122 @@ export function boostrapPostitJS(PostitJS, diagram, options, locals) {
     // This is needed if other libraries rely on this helper for testing
     // while not adding the mocha-test-container-support as a dependency.
     try {
-
       // 'this' is the current test context
-      testContainer = TestContainer.get(this);
+      testContainer = TestContainer.get(this)
     } catch (e) {
-      testContainer = document.createElement('div');
-      testContainer.classList.add('test-content-container');
+      testContainer = document.createElement('div')
+      testContainer.classList.add('test-content-container')
 
-      document.body.appendChild(testContainer);
+      document.body.appendChild(testContainer)
     }
 
     var _options = options,
-        _locals = locals;
+      _locals = locals
 
     if (_locals === undefined && isFunction(_options)) {
-      _locals = _options;
-      _options = null;
+      _locals = _options
+      _options = null
     }
 
     if (isFunction(_options)) {
-      _options = _options();
+      _options = _options()
     }
 
     if (isFunction(_locals)) {
-      _locals = _locals();
+      _locals = _locals()
     }
 
-    _options = merge({
-      container: testContainer,
-      canvas: {
-        deferUpdate: false
-      }
-    }, OPTIONS, _options);
+    _options = merge(
+      {
+        container: testContainer,
+        canvas: {
+          deferUpdate: false,
+        },
+      },
+      OPTIONS,
+      _options
+    )
 
     if (_locals) {
-      var mockModule = {};
+      var mockModule = {}
 
-      forEach(_locals, function(v, k) {
-        mockModule[k] = [ 'value', v ];
-      });
+      forEach(_locals, function (v, k) {
+        mockModule[k] = ['value', v]
+      })
 
-      _options.modules = [].concat(_options.modules || [], [ mockModule ]);
+      _options.modules = [].concat(_options.modules || [], [mockModule])
     }
 
     if (_options.modules && !_options.modules.length) {
-      _options.modules = undefined;
+      _options.modules = undefined
     }
 
-    clearPostitJS();
+    clearPostitJS()
 
-    var instance = new PostitJS(_options);
+    var instance = new PostitJS(_options)
 
-    setPostitJS(instance);
+    setPostitJS(instance)
 
-    return instance.importXML(diagram).then(function(result) {
-      return { error: null, warnings: result.warnings };
-    }).catch(function(err) {
-      return { error: err, warnings: err.warnings };
-    });
-  };
+    return instance
+      .importXML(diagram)
+      .then(function (result) {
+        return { error: null, warnings: result.warnings }
+      })
+      .catch(function (err) {
+        return { error: err, warnings: err.warnings }
+      })
+  }
 }
 
-
 export function bootstrapModeler(diagram, options, locals) {
-  return boostrapPostitJS(Modeler, diagram, options, locals);
+  return boostrapPostitJS(Modeler, diagram, options, locals)
 }
 
 export function inject(fn) {
-  return function() {
-
+  return function () {
     if (!POSTIT_JS) {
       throw new Error(
         'no bootstraped postit-js instance, ' +
-        'ensure you created it via #boostrap(Modeler|Viewer)'
-      );
+          'ensure you created it via #boostrap(Modeler|Viewer)'
+      )
     }
 
-    POSTIT_JS.invoke(fn);
-  };
+    POSTIT_JS.invoke(fn)
+  }
 }
 
 export function getPostitJS() {
-  return POSTIT_JS;
+  return POSTIT_JS
 }
 
 export function clearPostitJS() {
-
   // clean up old postit-js instance
   if (POSTIT_JS) {
-    POSTIT_JS.destroy();
+    POSTIT_JS.destroy()
 
-    POSTIT_JS = null;
+    POSTIT_JS = null
   }
 }
 
 export function setPostitJS(instance) {
-  POSTIT_JS = instance;
+  POSTIT_JS = instance
 }
 
 export function insertCSS(name, css) {
   if (document.querySelector('[data-css-file="' + name + '"]')) {
-    return;
+    return
   }
 
   var head = document.head || document.getElementsByTagName('head')[0],
-      style = document.createElement('style');
-  style.setAttribute('data-css-file', name);
+    style = document.createElement('style')
+  style.setAttribute('data-css-file', name)
 
-  style.type = 'text/css';
+  style.type = 'text/css'
   if (style.styleSheet) {
-    style.styleSheet.cssText = css;
+    style.styleSheet.cssText = css
   } else {
-    style.appendChild(document.createTextNode(css));
+    style.appendChild(document.createTextNode(css))
   }
 
-  head.appendChild(style);
+  head.appendChild(style)
 }

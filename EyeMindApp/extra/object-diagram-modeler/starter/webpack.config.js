@@ -1,20 +1,19 @@
-const webpack = require('webpack');
+const webpack = require('webpack')
 
-const CopyWebpackPlugin = require('copy-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin')
 
-const SOURCE_VERSION = process.env.SOURCE_VERSION || process.env.npm_package_gitHead || 'dev';
+const SOURCE_VERSION =
+  process.env.SOURCE_VERSION || process.env.npm_package_gitHead || 'dev'
 
 module.exports = (env) => {
-
-  let outputPath = __dirname + '/public';
+  let outputPath = __dirname + '/public'
   if (env.production) {
-
     // We expect the Visual debugger project in the same folder as this project.
-    outputPath = __dirname + '/../../docs';
+    outputPath = __dirname + '/../../docs'
   }
   return {
     entry: {
-      bundle: [ './app/app.js' ],
+      bundle: ['./app/app.js'],
     },
     output: {
       path: outputPath,
@@ -28,11 +27,11 @@ module.exports = (env) => {
         },
         {
           test: /\.css$/i,
-          use: [ 'style-loader', 'css-loader' ],
+          use: ['style-loader', 'css-loader'],
         },
         {
           test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
-          use: [ 'file-loader' ],
+          use: ['file-loader'],
         },
         {
           test: /\.less$/i,
@@ -51,16 +50,23 @@ module.exports = (env) => {
               },
             },
           ],
-        }
+        },
       ],
     },
     plugins: [
-      new CopyWebpackPlugin({ patterns: [ { from: '**/*.{html,css,woff,ttf,eot,svg,woff2,ico}', context: 'app/' } ] }),
+      new CopyWebpackPlugin({
+        patterns: [
+          {
+            from: '**/*.{html,css,woff,ttf,eot,svg,woff2,ico}',
+            context: 'app/',
+          },
+        ],
+      }),
       new webpack.DefinePlugin({
-        'process.env.SOURCE_VERSION': JSON.stringify(SOURCE_VERSION || null)
+        'process.env.SOURCE_VERSION': JSON.stringify(SOURCE_VERSION || null),
       }),
     ],
     mode: 'development',
     devtool: 'source-map',
-  };
-};
+  }
+}

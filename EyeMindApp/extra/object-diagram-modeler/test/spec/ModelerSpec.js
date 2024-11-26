@@ -1,114 +1,99 @@
-import Modeler from 'lib/Modeler';
+import Modeler from 'lib/Modeler'
 
-import Viewer from 'lib/Viewer';
+import Viewer from 'lib/Viewer'
 
-import TestContainer from 'mocha-test-container-support';
+import TestContainer from 'mocha-test-container-support'
 
-import {
-  setPostitJS,
-  clearPostitJS,
-  insertCSS
-} from 'test/TestHelper';
+import { setPostitJS, clearPostitJS, insertCSS } from 'test/TestHelper'
 
-import simpleXML from 'test/fixtures/simple.xml';
+import simpleXML from 'test/fixtures/simple.xml'
 
-import complexXML from 'test/fixtures/complex.xml';
+import complexXML from 'test/fixtures/complex.xml'
 
-import emptyXML from 'test/fixtures/empty.xml';
+import emptyXML from 'test/fixtures/empty.xml'
 
-var singleStart = window.__env__ && window.__env__.SINGLE_START === 'modeler';
+var singleStart = window.__env__ && window.__env__.SINGLE_START === 'modeler'
 
-insertCSS('odm.css', require('../../assets/odm.css').default);
+insertCSS('odm.css', require('../../assets/odm.css').default)
 
+describe('Modeler', function () {
+  var container
 
-describe('Modeler', function() {
+  var modeler
 
-  var container;
-
-  var modeler;
-
-  beforeEach(function() {
-    container = TestContainer.get(this);
-  });
+  beforeEach(function () {
+    container = TestContainer.get(this)
+  })
 
   function createModeler(xml) {
-
-    clearPostitJS();
+    clearPostitJS()
 
     modeler = new Modeler({
       container: container,
       keyboard: {
-        bindTo: document
-      }
-    });
+        bindTo: document,
+      },
+    })
 
-    setPostitJS(modeler);
+    setPostitJS(modeler)
 
-    return modeler.importXML(xml).then(function(result) {
-      return { error: null, warnings: result.warnings, modeler: modeler };
-    }).catch(function(err) {
-      return { error: err, warnings: err.warnings, modeler: modeler };
-    });
+    return modeler
+      .importXML(xml)
+      .then(function (result) {
+        return { error: null, warnings: result.warnings, modeler: modeler }
+      })
+      .catch(function (err) {
+        return { error: err, warnings: err.warnings, modeler: modeler }
+      })
   }
 
+  ;(singleStart ? it.only : it)('should import simple board', function () {
+    return createModeler(simpleXML).then(function (result) {
+      expect(result.error).not.to.exist
+    })
+  })
 
-  (singleStart ? it.only : it)('should import simple board', function() {
-    return createModeler(simpleXML).then(function(result) {
+  it('should import complex', function () {
+    return createModeler(complexXML).then(function (result) {
+      expect(result.error).not.to.exist
+    })
+  })
 
-      expect(result.error).not.to.exist;
-    });
-  });
-
-
-  it('should import complex', function() {
-    return createModeler(complexXML).then(function(result) {
-
-      expect(result.error).not.to.exist;
-    });
-  });
-
-
-  it('should not import empty definitions', function() {
-
+  it('should not import empty definitions', function () {
     // given
-    return createModeler(emptyXML).then(function(result) {
+    return createModeler(emptyXML)
+      .then(function (result) {
+        var modeler = result.modeler
 
-      var modeler = result.modeler;
+        // when
+        return modeler.importXML(emptyXML)
+      })
+      .catch(function (err) {
+        // then
+        expect(err.message).to.equal('no rootBoard to display')
+      })
+  })
 
-      // when
-      return modeler.importXML(emptyXML);
-    }).catch(function(err) {
-
-      // then
-      expect(err.message).to.equal('no rootBoard to display');
-    });
-  });
-
-
-  it('should re-import simple board', function() {
-
+  it('should re-import simple board', function () {
     // given
-    return createModeler(simpleXML).then(function(result) {
+    return createModeler(simpleXML)
+      .then(function (result) {
+        var modeler = result.modeler
 
-      var modeler = result.modeler;
+        // when
+        // mimic re-import of same diagram
+        return modeler.importXML(simpleXML)
+      })
+      .then(function (result) {
+        var warnings = result.warnings
 
-      // when
-      // mimic re-import of same diagram
-      return modeler.importXML(simpleXML);
-    }).then(function(result) {
+        // then
+        expect(warnings).to.be.empty
+      })
+  })
 
-      var warnings = result.warnings;
-
-      // then
-      expect(warnings).to.be.empty;
-    });
-  });
-
-
-  describe('editor actions support', function() {
-
-    it('should ship all actions', function() {
-
+  describe('editor actions support', function () {
+    it('should ship all actions', function () {
       // given
       var expectedActions = [
         'undo',
@@ -127,125 +112,105 @@ describe('Modeler', function() {
         'globalConnectTool',
         'alignElements',
         'directEditing',
-        'moveToOrigin'
-      ];
+        'moveToOrigin',
+      ]
 
-      var modeler = new Modeler();
+      var modeler = new Modeler()
 
       // when
-      var editorActions = modeler.get('editorActions');
+      var editorActions = modeler.get('editorActions')
 
       // then
-      var actualActions = editorActions.getActions();
+      var actualActions = editorActions.getActions()
 
-      expect(actualActions).to.eql(expectedActions);
-    });
+      expect(actualActions).to.eql(expectedActions)
+    })
+  })
 
-  });
-
-
-  describe('configuration', function() {
-
+  describe('configuration', function () {
     // given
-    it('should configure Canvas', function() {
-
+    it('should configure Canvas', function () {
       // given
       var modeler = new Modeler({
         container: container,
         canvas: {
-          deferUpdate: true
-        }
-      });
+          deferUpdate: true,
+        },
+      })
 
       // when
-      return modeler.importXML(simpleXML).then(function() {
-
-        var canvasConfig = modeler.get('config.canvas');
+      return modeler.importXML(simpleXML).then(function () {
+        var canvasConfig = modeler.get('config.canvas')
 
         // then
-        expect(canvasConfig.deferUpdate).to.be.true;
-      });
-    });
-  });
+        expect(canvasConfig.deferUpdate).to.be.true
+      })
+    })
+  })
 
+  it('should handle errors', function () {
+    var xml = 'invalid stuff'
 
-  it('should handle errors', function() {
+    var modeler = new Modeler({ container: container })
 
-    var xml = 'invalid stuff';
+    return modeler.importXML(xml).catch(function (err) {
+      expect(err).to.exist
+    })
+  })
 
-    var modeler = new Modeler({ container: container });
+  it('should create new diagram', function () {
+    var modeler = new Modeler({ container: container })
+    return modeler.createDiagram()
+  })
 
-    return modeler.importXML(xml).catch(function(err) {
-
-      expect(err).to.exist;
-    });
-  });
-
-
-  it('should create new diagram', function() {
-    var modeler = new Modeler({ container: container });
-    return modeler.createDiagram();
-  });
-
-
-  describe('dependency injection', function() {
-
-    it('should provide self as <odm>', function() {
-
+  describe('dependency injection', function () {
+    it('should provide self as <odm>', function () {
       // when
-      return createModeler(simpleXML).then(function(result) {
-
-        var modeler = result.modeler;
-        var err = result.error;
+      return createModeler(simpleXML).then(function (result) {
+        var modeler = result.modeler
+        var err = result.error
 
         if (err) {
-          throw err;
+          throw err
         }
 
         // then
-        expect(modeler.get('odm')).to.equal(modeler);
-      });
-    });
+        expect(modeler.get('odm')).to.equal(modeler)
+      })
+    })
 
-
-    it('should inject mandatory modules', function() {
-
+    it('should inject mandatory modules', function () {
       // when
-      return createModeler(simpleXML).then(function(result) {
-
-        var modeler = result.modeler;
-        var err = result.error;
+      return createModeler(simpleXML).then(function (result) {
+        var modeler = result.modeler
+        var err = result.error
 
         // then
 
         if (err) {
-          throw err;
+          throw err
         }
 
-        expect(modeler.get('alignElements')).to.exist;
-        expect(modeler.get('autoScroll')).to.exist;
-        expect(modeler.get('odCopyPaste')).to.exist;
-        expect(modeler.get('contextPad')).to.exist;
-        expect(modeler.get('copyPaste')).to.exist;
-        expect(modeler.get('alignElements')).to.exist;
-        expect(modeler.get('editorActions')).to.exist;
-        expect(modeler.get('keyboard')).to.exist;
-        expect(modeler.get('keyboardMoveSelection')).to.exist;
-        expect(modeler.get('labelEditingProvider')).to.exist;
-        expect(modeler.get('modeling')).to.exist;
-        expect(modeler.get('move')).to.exist;
-        expect(modeler.get('paletteProvider')).to.exist;
-        expect(modeler.get('resize')).to.exist;
-        expect(modeler.get('snapping')).to.exist;
-      });
+        expect(modeler.get('alignElements')).to.exist
+        expect(modeler.get('autoScroll')).to.exist
+        expect(modeler.get('odCopyPaste')).to.exist
+        expect(modeler.get('contextPad')).to.exist
+        expect(modeler.get('copyPaste')).to.exist
+        expect(modeler.get('alignElements')).to.exist
+        expect(modeler.get('editorActions')).to.exist
+        expect(modeler.get('keyboard')).to.exist
+        expect(modeler.get('keyboardMoveSelection')).to.exist
+        expect(modeler.get('labelEditingProvider')).to.exist
+        expect(modeler.get('modeling')).to.exist
+        expect(modeler.get('move')).to.exist
+        expect(modeler.get('paletteProvider')).to.exist
+        expect(modeler.get('resize')).to.exist
+        expect(modeler.get('snapping')).to.exist
+      })
+    })
+  })
 
-    });
-
-  });
-
-
-  it('should expose Viewer', function() {
-    expect(Modeler.Viewer).to.equal(Viewer);
-  });
-
-});
+  it('should expose Viewer', function () {
+    expect(Modeler.Viewer).to.equal(Viewer)
+  })
+})

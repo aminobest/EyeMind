@@ -1,17 +1,15 @@
-
-var files = [];
+var files = []
 
 function setFiles(vals) {
-	Array.from(vals).forEach(val => files.push(val));
+  Array.from(vals).forEach((val) => files.push(val))
 }
 
 function shiftFile() {
-	return files.shift();
+  return files.shift()
 }
-
 
 function nFiles() {
-	return files.length;
+  return files.length
 }
 
-export {setFiles,shiftFile,nFiles}
+export { setFiles, shiftFile, nFiles }

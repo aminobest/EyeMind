@@ -1,11 +1,11 @@
-var snapshots = null;
+var snapshots = null
 
 function setSnapshots(val) {
-	snapshots = val;
+  snapshots = val
 }
 
 function getSnapshots() {
-	return snapshots
+  return snapshots
 }
 
-export {setSnapshots,getSnapshots}
+export { setSnapshots, getSnapshots }

@@ -1,8 +1,8 @@
-export * from './helper';
+export * from './helper'
 
-import ChaiMatch from 'chai-match';
+import ChaiMatch from 'chai-match'
 
 /* global chai */
 
 // add suite specific matchers
-chai.use(ChaiMatch);
+chai.use(ChaiMatch)
