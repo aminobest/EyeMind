@@ -1,21 +1,13 @@
-import {
-  reduce,
-  keys,
-  forEach,
-  assign
-} from 'min-dash';
-
-import {
-  getBusinessObject
-} from '../../../util/ModelUtil';
+import { assign, forEach, keys, reduce } from 'min-dash'
+import { getBusinessObject } from '../../../util/ModelUtil'
 
 var ID = 'id',
-    DI = 'di';
+  DI = 'di'
 
 var NULL_DIMENSIONS = {
   width: 0,
-  height: 0
-};
+  height: 0,
+}
 
 /**
  * A handler that implements a od elements property update.
@@ -27,14 +19,17 @@ var NULL_DIMENSIONS = {
  * like to perform automated modeling.
  */
 export default function UpdatePropertiesHandler(
-    elementRegistry, moddle, translate,
-    modeling, textRenderer) {
-
-  this._elementRegistry = elementRegistry;
-  this._moddle = moddle;
-  this._translate = translate;
-  this._modeling = modeling;
-  this._textRenderer = textRenderer;
+  elementRegistry,
+  moddle,
+  translate,
+  modeling,
+  textRenderer,
+) {
+  this._elementRegistry = elementRegistry
+  this._moddle = moddle
+  this._translate = translate
+  this._modeling = modeling
+  this._textRenderer = textRenderer
 }
 
 UpdatePropertiesHandler.$inject = [
@@ -42,9 +37,8 @@ UpdatePropertiesHandler.$inject = [
   'moddle',
   'translate',
   'modeling',
-  'textRenderer'
-];
-
+  'textRenderer',
+]
 
 // api //////////////////////
 
@@ -58,59 +52,57 @@ UpdatePropertiesHandler.$inject = [
  *
  * @return {Array<djs.model.Base>} the updated element
  */
-UpdatePropertiesHandler.prototype.execute = function(context) {
-
+UpdatePropertiesHandler.prototype.execute = function (context) {
   var element = context.element,
-      changed = [ element ],
-      translate = this._translate;
+    changed = [element],
+    translate = this._translate
 
   if (!element) {
-    throw new Error(translate('element required'));
+    throw new Error(translate('element required'))
   }
 
   var elementRegistry = this._elementRegistry,
-      ids = this._moddle.ids;
+    ids = this._moddle.ids
 
   var businessObject = element.businessObject,
-      properties = unwrapBusinessObjects(context.properties),
-      oldProperties = context.oldProperties || getProperties(businessObject, properties);
+    properties = unwrapBusinessObjects(context.properties),
+    oldProperties = context.oldProperties || getProperties(businessObject, properties)
 
   if (isIdChange(properties, businessObject)) {
-    ids.unclaim(businessObject[ID]);
+    ids.unclaim(businessObject[ID])
 
-    elementRegistry.updateId(element, properties[ID]);
+    elementRegistry.updateId(element, properties[ID])
 
-    ids.claim(properties[ID], businessObject);
+    ids.claim(properties[ID], businessObject)
   }
 
   // update properties
-  setProperties(businessObject, properties);
+  setProperties(businessObject, properties)
 
   // store old values
-  context.oldProperties = oldProperties;
-  context.changed = changed;
+  context.oldProperties = oldProperties
+  context.changed = changed
 
   // indicate changed on objects affected by the update
-  return changed;
-};
+  return changed
+}
 
-
-UpdatePropertiesHandler.prototype.postExecute = function(context) {
+UpdatePropertiesHandler.prototype.postExecute = function (context) {
   var element = context.element,
-      label = element.label;
+    label = element.label
 
-  var text = label && getBusinessObject(label).name;
+  var text = label && getBusinessObject(label).name
 
   if (!text) {
-    return;
+    return
   }
 
   // get layouted text bounds and resize external
   // external label accordingly
-  var newLabelBounds = this._textRenderer.getExternalLabelBounds(label, text);
+  var newLabelBounds = this._textRenderer.getExternalLabelBounds(label, text)
 
-  this._modeling.resizeShape(label, newLabelBounds, NULL_DIMENSIONS);
-};
+  this._modeling.resizeShape(label, newLabelBounds, NULL_DIMENSIONS)
+}
 
 /**
  * Reverts the update on a board elements properties.
@@ -119,85 +111,83 @@ UpdatePropertiesHandler.prototype.postExecute = function(context) {
  *
  * @return {djs.model.Base} the updated element
  */
-UpdatePropertiesHandler.prototype.revert = function(context) {
-
+UpdatePropertiesHandler.prototype.revert = function (context) {
   var element = context.element,
-      properties = context.properties,
-      oldProperties = context.oldProperties,
-      businessObject = element.businessObject,
-      elementRegistry = this._elementRegistry,
-      ids = this._moddle.ids;
+    properties = context.properties,
+    oldProperties = context.oldProperties,
+    businessObject = element.businessObject,
+    elementRegistry = this._elementRegistry,
+    ids = this._moddle.ids
 
   // update properties
-  setProperties(businessObject, oldProperties);
+  setProperties(businessObject, oldProperties)
 
   if (isIdChange(properties, businessObject)) {
-    ids.unclaim(properties[ID]);
+    ids.unclaim(properties[ID])
 
-    elementRegistry.updateId(element, oldProperties[ID]);
+    elementRegistry.updateId(element, oldProperties[ID])
 
-    ids.claim(oldProperties[ID], businessObject);
+    ids.claim(oldProperties[ID], businessObject)
   }
 
-  return context.changed;
-};
-
+  return context.changed
+}
 
 function isIdChange(properties, businessObject) {
-  return ID in properties && properties[ID] !== businessObject[ID];
+  return ID in properties && properties[ID] !== businessObject[ID]
 }
-
 
 function getProperties(businessObject, properties) {
-  var propertyNames = keys(properties);
+  var propertyNames = keys(properties)
 
-  return reduce(propertyNames, function(result, key) {
+  return reduce(
+    propertyNames,
+    function (result, key) {
+      // handle DI separately
+      if (key !== DI) {
+        result[key] = businessObject.get(key)
+      } else {
+        result[key] = getDiProperties(businessObject.di, keys(properties.di))
+      }
 
-    // handle DI separately
-    if (key !== DI) {
-      result[key] = businessObject.get(key);
-    } else {
-      result[key] = getDiProperties(businessObject.di, keys(properties.di));
-    }
-
-    return result;
-  }, {});
+      return result
+    },
+    {},
+  )
 }
-
 
 function getDiProperties(di, propertyNames) {
-  return reduce(propertyNames, function(result, key) {
-    result[key] = di.get(key);
+  return reduce(
+    propertyNames,
+    function (result, key) {
+      result[key] = di.get(key)
 
-    return result;
-  }, {});
+      return result
+    },
+    {},
+  )
 }
-
 
 function setProperties(businessObject, properties) {
-  forEach(properties, function(value, key) {
-
+  forEach(properties, function (value, key) {
     if (key !== DI) {
-      businessObject.set(key, value);
+      businessObject.set(key, value)
     } else {
-
       // only update, if businessObject.di exists
       if (businessObject.di) {
-        setDiProperties(businessObject.di, value);
+        setDiProperties(businessObject.di, value)
       }
     }
-  });
+  })
 }
-
 
 function setDiProperties(di, properties) {
-  forEach(properties, function(value, key) {
-    di.set(key, value);
-  });
+  forEach(properties, function (value, key) {
+    di.set(key, value)
+  })
 }
 
-
-var referencePropertyNames = [ 'default' ];
+var referencePropertyNames = ['default']
 
 /**
  * Make sure we unwrap the actual business object
@@ -209,14 +199,13 @@ var referencePropertyNames = [ 'default' ];
  * @return {Object} unwrappedProps
  */
 function unwrapBusinessObjects(properties) {
+  var unwrappedProps = assign({}, properties)
 
-  var unwrappedProps = assign({}, properties);
-
-  referencePropertyNames.forEach(function(name) {
+  referencePropertyNames.forEach(function (name) {
     if (name in properties) {
-      unwrappedProps[name] = getBusinessObject(unwrappedProps[name]);
+      unwrappedProps[name] = getBusinessObject(unwrappedProps[name])
     }
-  });
+  })
 
-  return unwrappedProps;
+  return unwrappedProps
 }

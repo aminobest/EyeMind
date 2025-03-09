@@ -1,50 +1,41 @@
-import inherits from 'inherits';
-
-import {
-  is,
-  getBusinessObject
-} from '../../../util/ModelUtil';
-
-import CommandInterceptor from 'diagram-js/lib/command/CommandInterceptor';
-
+import CommandInterceptor from 'diagram-js/lib/command/CommandInterceptor'
+import inherits from 'inherits'
+import { getBusinessObject, is } from '../../../util/ModelUtil'
 
 export default function EmptyTextBoxBehavior(eventBus, modeling, directEditing) {
-
-  CommandInterceptor.call(this, eventBus);
+  CommandInterceptor.call(this, eventBus)
 
   // delete text box if it has no text
-  this.postExecute('element.updateLabel', function(context) {
+  this.postExecute(
+    'element.updateLabel',
+    function (context) {
+      var element = context.element,
+        newLabel = context.newLabel
 
-    var element = context.element,
-        newLabel = context.newLabel;
+      if (is(element, 'od:TextBox') && isEmpty(newLabel)) {
+        modeling.removeElements([element])
+      }
+    },
+    true,
+  )
 
-    if (is(element, 'od:TextBox') && isEmpty(newLabel)) {
-      modeling.removeElements([ element ]);
-    }
-  }, true);
-
-  eventBus.on('directEditing.cancel', 1001, function(event) {
+  eventBus.on('directEditing.cancel', 1001, function (event) {
     var active = event.active,
-        element = active.element;
+      element = active.element
 
     if (is(element, 'od:TextBox') && isEmpty(getBusinessObject(element).name)) {
-      directEditing._active = false;
-      modeling.removeElements([ element ]);
+      directEditing._active = false
+      modeling.removeElements([element])
     }
-  });
+  })
 }
 
-inherits(EmptyTextBoxBehavior, CommandInterceptor);
+inherits(EmptyTextBoxBehavior, CommandInterceptor)
 
-EmptyTextBoxBehavior.$inject = [
-  'eventBus',
-  'modeling',
-  'directEditing'
-];
-
+EmptyTextBoxBehavior.$inject = ['eventBus', 'modeling', 'directEditing']
 
 // helpers //////////
 
 function isEmpty(label) {
-  return !label || label === '';
+  return !label || label === ''
 }

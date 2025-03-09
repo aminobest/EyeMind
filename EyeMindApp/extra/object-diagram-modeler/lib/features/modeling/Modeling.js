@@ -1,13 +1,9 @@
-import inherits from 'inherits';
-
-import BaseModeling from 'diagram-js/lib/features/modeling/Modeling';
-
-import UpdatePropertiesHandler from './cmd/UpdatePropertiesHandler';
-import UpdateCanvasRootHandler from './cmd/UpdateCanvasRootHandler';
-import IdClaimHandler from './cmd/IdClaimHandler';
-
-import UpdateLabelHandler from '../label-editing/cmd/UpdateLabelHandler';
-
+import BaseModeling from 'diagram-js/lib/features/modeling/Modeling'
+import inherits from 'inherits'
+import UpdateLabelHandler from '../label-editing/cmd/UpdateLabelHandler'
+import IdClaimHandler from './cmd/IdClaimHandler'
+import UpdateCanvasRootHandler from './cmd/UpdateCanvasRootHandler'
+import UpdatePropertiesHandler from './cmd/UpdatePropertiesHandler'
 
 /**
  * Postit modeling features activator
@@ -17,81 +13,68 @@ import UpdateLabelHandler from '../label-editing/cmd/UpdateLabelHandler';
  * @param {CommandStack} commandStack
  * @param {ODRules} odRules
  */
-export default function Modeling(
-    eventBus, elementFactory, commandStack,
-    odRules) {
+export default function Modeling(eventBus, elementFactory, commandStack, odRules) {
+  BaseModeling.call(this, eventBus, elementFactory, commandStack)
 
-  BaseModeling.call(this, eventBus, elementFactory, commandStack);
-
-  this._odRules = odRules;
+  this._odRules = odRules
 }
 
-inherits(Modeling, BaseModeling);
+inherits(Modeling, BaseModeling)
 
-Modeling.$inject = [
-  'eventBus',
-  'elementFactory',
-  'commandStack',
-  'odRules'
-];
+Modeling.$inject = ['eventBus', 'elementFactory', 'commandStack', 'odRules']
 
+Modeling.prototype.getHandlers = function () {
+  var handlers = BaseModeling.prototype.getHandlers.call(this)
 
-Modeling.prototype.getHandlers = function() {
-  var handlers = BaseModeling.prototype.getHandlers.call(this);
+  handlers['element.updateProperties'] = UpdatePropertiesHandler
+  handlers['canvas.updateRoot'] = UpdateCanvasRootHandler
+  handlers['id.updateClaim'] = IdClaimHandler
+  handlers['element.updateLabel'] = UpdateLabelHandler
 
-  handlers['element.updateProperties'] = UpdatePropertiesHandler;
-  handlers['canvas.updateRoot'] = UpdateCanvasRootHandler;
-  handlers['id.updateClaim'] = IdClaimHandler;
-  handlers['element.updateLabel'] = UpdateLabelHandler;
+  return handlers
+}
 
-  return handlers;
-};
-
-
-Modeling.prototype.updateLabel = function(element, newLabel, newBounds, hints) {
+Modeling.prototype.updateLabel = function (element, newLabel, newBounds, hints) {
   this._commandStack.execute('element.updateLabel', {
     element: element,
     newLabel: newLabel,
     newBounds: newBounds,
-    hints: hints || {}
-  });
-};
+    hints: hints || {},
+  })
+}
 
-
-Modeling.prototype.updateProperties = function(element, properties) {
+Modeling.prototype.updateProperties = function (element, properties) {
   this._commandStack.execute('element.updateProperties', {
     element: element,
-    properties: properties
-  });
-};
+    properties: properties,
+  })
+}
 
-Modeling.prototype.claimId = function(id, moddleElement) {
+Modeling.prototype.claimId = function (id, moddleElement) {
   this._commandStack.execute('id.updateClaim', {
     id: id,
     element: moddleElement,
-    claiming: true
-  });
-};
+    claiming: true,
+  })
+}
 
-
-Modeling.prototype.unclaimId = function(id, moddleElement) {
+Modeling.prototype.unclaimId = function (id, moddleElement) {
   this._commandStack.execute('id.updateClaim', {
     id: id,
-    element: moddleElement
-  });
-};
+    element: moddleElement,
+  })
+}
 
-Modeling.prototype.connect = function(source, target, attrs, hints) {
-
-  var odRules = this._odRules;
+Modeling.prototype.connect = function (source, target, attrs, hints) {
+  var odRules = this._odRules
 
   if (!attrs) {
-    attrs = odRules.canConnect(source, target);
+    attrs = odRules.canConnect(source, target)
   }
 
   if (!attrs) {
-    return;
+    return
   }
 
-  return this.createConnection(source, target, attrs, source.parent, hints);
-};
+  return this.createConnection(source, target, attrs, source.parent, hints)
+}

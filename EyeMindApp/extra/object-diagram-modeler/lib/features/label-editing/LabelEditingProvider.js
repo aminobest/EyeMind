@@ -1,81 +1,79 @@
-import {
-  assign
-} from 'min-dash';
-
-import {
-  getLabel
-} from './LabelUtil';
-
-import { isAny } from '../modeling/util/ModelingUtil';
-
+import { assign } from 'min-dash'
 import {
   getExternalLabelMid,
-  isLabelExternal,
   hasExternalLabel,
-  isLabel
-} from '../../util/LabelUtil';
-
+  isLabel,
+  isLabelExternal,
+} from '../../util/LabelUtil'
+import { isAny } from '../modeling/util/ModelingUtil'
+import { getLabel } from './LabelUtil'
 
 export default function LabelEditingProvider(
-    eventBus, odFactory, canvas, directEditing,
-    modeling, resizeHandles, textRenderer) {
+  eventBus,
+  odFactory,
+  canvas,
+  directEditing,
+  modeling,
+  resizeHandles,
+  textRenderer,
+) {
+  this._odFactory = odFactory
+  this._canvas = canvas
+  this._modeling = modeling
+  this._textRenderer = textRenderer
 
-  this._odFactory = odFactory;
-  this._canvas = canvas;
-  this._modeling = modeling;
-  this._textRenderer = textRenderer;
-
-  directEditing.registerProvider(this);
+  directEditing.registerProvider(this)
 
   function decideIfTitelOrAttributesClicked(event) {
-    var zoom = canvas.zoom();
-    var titel_attribute_divider_y_coordinate = (event.element.y + 30 - canvas._cachedViewbox.y) * zoom;
-    var click_y_coordinate = event.originalEvent.offsetY;
+    var zoom = canvas.zoom()
+    var titel_attribute_divider_y_coordinate =
+      (event.element.y + 30 - canvas._cachedViewbox.y) * zoom
+    var click_y_coordinate = event.originalEvent.offsetY
     if (click_y_coordinate >= titel_attribute_divider_y_coordinate) {
-      event.element.businessObject.labelAttribute = 'attributeValues';
+      event.element.businessObject.labelAttribute = 'attributeValues'
     } else {
-      event.element.businessObject.labelAttribute = 'name';
+      event.element.businessObject.labelAttribute = 'name'
     }
   }
 
   // listen to dblclick on non-root elements
-  eventBus.on('element.dblclick', function(event) {
-    decideIfTitelOrAttributesClicked(event);
-    activateDirectEdit(event.element, true);
-  });
+  eventBus.on('element.dblclick', function (event) {
+    decideIfTitelOrAttributesClicked(event)
+    activateDirectEdit(event.element, true)
+  })
 
   // complete on followup canvas operation
-  eventBus.on([
-    'autoPlace.start',
-    'canvas.viewbox.changing',
-    'drag.init',
-    'element.mousedown',
-    'popupMenu.open'
-  ], function(event) {
-
-    if (directEditing.isActive()) {
-      directEditing.complete();
-    }
-  });
+  eventBus.on(
+    [
+      'autoPlace.start',
+      'canvas.viewbox.changing',
+      'drag.init',
+      'element.mousedown',
+      'popupMenu.open',
+    ],
+    function (event) {
+      if (directEditing.isActive()) {
+        directEditing.complete()
+      }
+    },
+  )
 
   // cancel on command stack changes
-  eventBus.on([ 'commandStack.changed' ], function(e) {
+  eventBus.on(['commandStack.changed'], function (e) {
     if (directEditing.isActive()) {
-      directEditing.cancel();
+      directEditing.cancel()
     }
-  });
+  })
 
+  eventBus.on('directEditing.activate', function (event) {
+    resizeHandles.removeResizers()
+  })
 
-  eventBus.on('directEditing.activate', function(event) {
-    resizeHandles.removeResizers();
-  });
-
-  eventBus.on('create.end', 500, function(event) {
-
+  eventBus.on('create.end', 500, function (event) {
     var context = event.context,
-        element = context.shape,
-        canExecute = event.context.canExecute,
-        isTouch = event.isTouch;
+      element = context.shape,
+      canExecute = event.context.canExecute,
+      isTouch = event.isTouch
 
     // TODO(nikku): we need to find a way to support the
     // direct editing on mobile devices; right now this will
@@ -86,32 +84,29 @@ export default function LabelEditingProvider(
     // here and release the focused viewport after the direct edit
     // operation is finished
     if (isTouch) {
-      return;
+      return
     }
 
     if (!canExecute) {
-      return;
+      return
     }
 
     if (context.hints && context.hints.createElementsBehavior === false) {
-      return;
+      return
     }
 
-    activateDirectEdit(element, false);
-  });
+    activateDirectEdit(element, false)
+  })
 
-  eventBus.on('autoPlace.end', 500, function(event) {
-    activateDirectEdit(event.shape, false);
-  });
-
+  eventBus.on('autoPlace.end', 500, function (event) {
+    activateDirectEdit(event.shape, false)
+  })
 
   function activateDirectEdit(element, force) {
-    if (force ||
-      isAny(element, [ 'od:TextBox', 'od:Object' ])) {
-      directEditing.activate(element);
+    if (force || isAny(element, ['od:TextBox', 'od:Object'])) {
+      directEditing.activate(element)
     }
   }
-
 }
 
 LabelEditingProvider.$inject = [
@@ -121,9 +116,8 @@ LabelEditingProvider.$inject = [
   'directEditing',
   'modeling',
   'resizeHandles',
-  'textRenderer'
-];
-
+  'textRenderer',
+]
 
 /**
  * Activate direct editing for objects and text annotations.
@@ -132,47 +126,45 @@ LabelEditingProvider.$inject = [
  *
  * @return {Object} an object with properties bounds (position and size), text and options
  */
-LabelEditingProvider.prototype.activate = function(element) {
-
+LabelEditingProvider.prototype.activate = function (element) {
   // text
-  var text = getLabel(element);
+  var text = getLabel(element)
 
   if (text === undefined) {
-    return;
+    return
   }
 
   var context = {
-    text: text
-  };
+    text: text,
+  }
 
   // bounds
-  var bounds = this.getEditingBBox(element);
+  var bounds = this.getEditingBBox(element)
 
-  assign(context, bounds);
+  assign(context, bounds)
 
-  var options = {};
+  var options = {}
 
   // text boxes
-  if (isAny(element, [ 'od:TextBox' ])) {
+  if (isAny(element, ['od:TextBox'])) {
     assign(options, {
-      centerVertically: true
-    });
+      centerVertically: true,
+    })
   }
 
   // external labels
   if (isLabelExternal(element)) {
     assign(options, {
-      autoResize: true
-    });
+      autoResize: true,
+    })
   }
 
   assign(context, {
-    options: options
-  });
+    options: options,
+  })
 
-  return context;
-};
-
+  return context
+}
 
 /**
  * Get the editing bounding box based on the element's size and position
@@ -182,73 +174,70 @@ LabelEditingProvider.prototype.activate = function(element) {
  * @return {Object} an object containing information about position
  *                  and size (fixed or minimum and/or maximum)
  */
-LabelEditingProvider.prototype.getEditingBBox = function(element) {
-  var canvas = this._canvas;
+LabelEditingProvider.prototype.getEditingBBox = function (element) {
+  var canvas = this._canvas
 
-  var target = element.label || element;
+  var target = element.label || element
 
-  var bbox = canvas.getAbsoluteBBox(target);
+  var bbox = canvas.getAbsoluteBBox(target)
 
   var mid = {
     x: bbox.x + bbox.width / 2,
-    y: bbox.y + bbox.height / 2
-  };
+    y: bbox.y + bbox.height / 2,
+  }
 
   // default position
-  var bounds = { x: bbox.x, y: bbox.y };
+  var bounds = { x: bbox.x, y: bbox.y }
 
-  var zoom = canvas.zoom();
+  var zoom = canvas.zoom()
 
   var defaultStyle = this._textRenderer.getDefaultStyle(),
-      externalStyle = this._textRenderer.getExternalStyle();
+    externalStyle = this._textRenderer.getExternalStyle()
 
   // take zoom into account
   var externalFontSize = externalStyle.fontSize * zoom,
-      externalLineHeight = externalStyle.lineHeight,
-      defaultFontSize = defaultStyle.fontSize * zoom,
-      defaultLineHeight = defaultStyle.lineHeight;
+    externalLineHeight = externalStyle.lineHeight,
+    defaultFontSize = defaultStyle.fontSize * zoom,
+    defaultLineHeight = defaultStyle.lineHeight
 
   var style = {
     fontFamily: this._textRenderer.getDefaultStyle().fontFamily,
-    fontWeight: this._textRenderer.getDefaultStyle().fontWeight
-  };
+    fontWeight: this._textRenderer.getDefaultStyle().fontWeight,
+  }
 
-
-  if (isAny(element, [ 'od:TextBox', 'od:Object' ])) {
-
+  if (isAny(element, ['od:TextBox', 'od:Object'])) {
     assign(bounds, {
       width: bbox.width,
-      height: bbox.height
-    });
+      height: bbox.height,
+    })
 
     assign(style, {
       fontSize: defaultFontSize + 'px',
       lineHeight: defaultLineHeight,
-      paddingTop: (7 * zoom) + 'px',
-      paddingBottom: (7 * zoom) + 'px',
-      paddingLeft: (5 * zoom) + 'px',
-      paddingRight: (5 * zoom) + 'px'
-    });
+      paddingTop: 7 * zoom + 'px',
+      paddingBottom: 7 * zoom + 'px',
+      paddingLeft: 5 * zoom + 'px',
+      paddingRight: 5 * zoom + 'px',
+    })
 
-    if (isAny(element, [ 'od:Object' ])) {
-
+    if (isAny(element, ['od:Object'])) {
       // Editing attributes should be different.
       if (element.businessObject.labelAttribute === 'attributeValues') {
         assign(bounds, {
-          y: bbox.y + (30 * zoom),
-          height: bbox.height - (30 * zoom)
-        });
+          y: bbox.y + 30 * zoom,
+          height: bbox.height - 30 * zoom,
+        })
       } else {
         assign(bounds, {
-          height: (30 * zoom)
-        });
+          height: 30 * zoom,
+        })
       }
     }
   }
 
   var width = 90 * zoom,
-      paddingTop = 7 * zoom,
-      paddingBottom = 4 * zoom;
+    paddingTop = 7 * zoom,
+    paddingBottom = 4 * zoom
 
   // external labels for events, data elements, gateways, groups and connections
   if (target.labelTarget) {
@@ -256,64 +245,58 @@ LabelEditingProvider.prototype.getEditingBBox = function(element) {
       width: width,
       height: bbox.height + paddingTop + paddingBottom,
       x: mid.x - width / 2,
-      y: bbox.y - paddingTop
-    });
+      y: bbox.y - paddingTop,
+    })
 
     assign(style, {
       fontSize: externalFontSize + 'px',
       lineHeight: externalLineHeight,
       paddingTop: paddingTop + 'px',
-      paddingBottom: paddingBottom + 'px'
-    });
+      paddingBottom: paddingBottom + 'px',
+    })
   }
 
   // external label not yet created
-  if (isLabelExternal(target)
-    && !hasExternalLabel(target)
-    && !isLabel(target)) {
-
-    var externalLabelMid = getExternalLabelMid(element);
+  if (isLabelExternal(target) && !hasExternalLabel(target) && !isLabel(target)) {
+    var externalLabelMid = getExternalLabelMid(element)
 
     var absoluteBBox = canvas.getAbsoluteBBox({
       x: externalLabelMid.x,
       y: externalLabelMid.y,
       width: 0,
-      height: 0
-    });
+      height: 0,
+    })
 
-    var height = externalFontSize + paddingTop + paddingBottom;
+    var height = externalFontSize + paddingTop + paddingBottom
 
     assign(bounds, {
       width: width,
       height: height,
       x: absoluteBBox.x - width / 2,
-      y: absoluteBBox.y - height / 2
-    });
+      y: absoluteBBox.y - height / 2,
+    })
 
     assign(style, {
       fontSize: externalFontSize + 'px',
       lineHeight: externalLineHeight,
       paddingTop: paddingTop + 'px',
-      paddingBottom: paddingBottom + 'px'
-    });
+      paddingBottom: paddingBottom + 'px',
+    })
   }
 
-  return { bounds: bounds, style: style };
-};
+  return { bounds: bounds, style: style }
+}
 
-
-LabelEditingProvider.prototype.update = function(element, newLabel) {
-
+LabelEditingProvider.prototype.update = function (element, newLabel) {
   if (isEmptyText(newLabel)) {
-    newLabel = null;
+    newLabel = null
   }
 
-  this._modeling.updateLabel(element, newLabel);
-};
-
+  this._modeling.updateLabel(element, newLabel)
+}
 
 // helpers //////////////////////
 
 function isEmptyText(label) {
-  return !label || !label.trim();
+  return !label || !label.trim()
 }

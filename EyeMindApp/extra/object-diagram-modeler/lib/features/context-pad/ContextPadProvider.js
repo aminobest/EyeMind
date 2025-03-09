@@ -1,53 +1,53 @@
-import {
-  assign,
-  isArray,
-} from 'min-dash';
-
-import {
-  hasPrimaryModifier
-} from 'diagram-js/lib/util/Mouse';
-
+import { hasPrimaryModifier } from 'diagram-js/lib/util/Mouse'
+import { assign, isArray } from 'min-dash'
 
 /**
  * A provider for od elements context pad.
  */
 export default function ContextPadProvider(
-    config, injector, eventBus, connect, create,
-    elementFactory, contextPad, modeling, rules,
-    translate) {
+  config,
+  injector,
+  eventBus,
+  connect,
+  create,
+  elementFactory,
+  contextPad,
+  modeling,
+  rules,
+  translate,
+) {
+  config = config || {}
 
-  config = config || {};
+  contextPad.registerProvider(this)
 
-  contextPad.registerProvider(this);
+  this._connect = connect
+  this._create = create
+  this._elementFactory = elementFactory
+  this._contextPad = contextPad
 
-  this._connect = connect;
-  this._create = create;
-  this._elementFactory = elementFactory;
-  this._contextPad = contextPad;
+  this._modeling = modeling
 
-  this._modeling = modeling;
-
-  this._rules = rules;
-  this._translate = translate;
+  this._rules = rules
+  this._translate = translate
 
   if (config.autoPlace !== false) {
-    this._autoPlace = injector.get('autoPlace', false);
+    this._autoPlace = injector.get('autoPlace', false)
   }
 
-  eventBus.on('create.end', 250, function(event) {
+  eventBus.on('create.end', 250, function (event) {
     let context = event.context,
-        shape = context.shape;
+      shape = context.shape
 
     if (!hasPrimaryModifier(event) || !contextPad.isOpen(shape)) {
-      return;
+      return
     }
 
-    let entries = contextPad.getEntries(shape);
+    let entries = contextPad.getEntries(shape)
 
     if (entries.replace) {
-      entries.replace.action.click(event, shape);
+      entries.replace.action.click(event, shape)
     }
-  });
+  })
 }
 
 ContextPadProvider.$inject = [
@@ -60,12 +60,10 @@ ContextPadProvider.$inject = [
   'contextPad',
   'modeling',
   'rules',
-  'translate'
-];
+  'translate',
+]
 
-
-ContextPadProvider.prototype.getContextPadEntries = function(element) {
-
+ContextPadProvider.prototype.getContextPadEntries = function (element) {
   const {
     _rules: rules,
     _modeling: modeling,
@@ -73,59 +71,57 @@ ContextPadProvider.prototype.getContextPadEntries = function(element) {
     _connect: connect,
     _elementFactory: elementFactory,
     _autoPlace: autoPlace,
-    _create: create
-  } = this;
+    _create: create,
+  } = this
 
-  let actions = {};
+  let actions = {}
 
   if (element.type === 'label') {
-    return actions;
+    return actions
   }
 
-  createDeleteEntry(actions);
+  createDeleteEntry(actions)
   if (element.type === 'od:Object') {
-    createLinkObjectsEntry(actions);
-    createLinkNewObjectEntry(actions);
+    createLinkObjectsEntry(actions)
+    createLinkNewObjectEntry(actions)
   }
 
-  return actions;
+  return actions
 
   function removeElement() {
-    modeling.removeElements([ element ]);
+    modeling.removeElements([element])
   }
 
   function createDeleteEntry(actions) {
-
     // delete element entry, only show if allowed by rules
-    let deleteAllowed = rules.allowed('elements.delete', { elements: [ element ] });
+    let deleteAllowed = rules.allowed('elements.delete', { elements: [element] })
 
     if (isArray(deleteAllowed)) {
-
       // was the element returned as a deletion candidate?
-      deleteAllowed = deleteAllowed[0] === element;
+      deleteAllowed = deleteAllowed[0] === element
     }
 
     if (deleteAllowed) {
       assign(actions, {
-        'delete': {
+        delete: {
           group: 'edit',
           className: 'bpmn-icon-trash',
           title: translate('Remove'),
           action: {
-            click: removeElement
-          }
-        }
-      });
+            click: removeElement,
+          },
+        },
+      })
     }
   }
 
   function startConnect(event, element) {
-    connect.start(event, element);
+    connect.start(event, element)
   }
 
   function createLinkObjectsEntry(actions) {
     assign(actions, {
-      'connect': {
+      connect: {
         group: 'connect',
         className: 'bpmn-icon-connection',
         title: 'Link object to other objects',
@@ -134,7 +130,7 @@ ContextPadProvider.prototype.getContextPadEntries = function(element) {
           dragstart: startConnect,
         },
       },
-    });
+    })
   }
 
   function createLinkNewObjectEntry(actions) {
@@ -142,9 +138,9 @@ ContextPadProvider.prototype.getContextPadEntries = function(element) {
       'append.append-task': appendAction(
         'od:Object',
         'od-no-font-icon-object',
-        translate('Link with new object')
+        translate('Link with new object'),
       ),
-    });
+    })
   }
 
   /**
@@ -158,27 +154,25 @@ ContextPadProvider.prototype.getContextPadEntries = function(element) {
    * @return {Object} descriptor
    */
   function appendAction(type, className, title, options) {
-
     if (typeof title !== 'string') {
-      options = title;
-      title = translate('Append {type}', { type: type.replace(/^bpmn:/, '') });
+      options = title
+      title = translate('Append {type}', { type: type.replace(/^bpmn:/, '') })
     }
 
     function appendStart(event, element) {
-
-      var shape = elementFactory.createShape(assign({ type: type }, options));
+      var shape = elementFactory.createShape(assign({ type: type }, options))
       create.start(event, shape, {
-        source: element
-      });
+        source: element,
+      })
     }
 
+    var append = autoPlace
+      ? function (event, element) {
+          var shape = elementFactory.createShape(assign({ type: type }, options))
 
-    var append = autoPlace ? function(event, element) {
-      var shape = elementFactory.createShape(assign({ type: type }, options));
-
-      autoPlace.append(element, shape);
-    } : appendStart;
-
+          autoPlace.append(element, shape)
+        }
+      : appendStart
 
     return {
       group: 'model',
@@ -186,8 +180,8 @@ ContextPadProvider.prototype.getContextPadEntries = function(element) {
       title: title,
       action: {
         dragstart: appendStart,
-        click: append
-      }
-    };
+        click: append,
+      },
+    }
   }
-};
+}

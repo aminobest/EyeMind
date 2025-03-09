@@ -1,34 +1,32 @@
 export default function UpdateSemanticParentHandler(odUpdater) {
-  this._odUpdater = odUpdater;
+  this._odUpdater = odUpdater
 }
 
-UpdateSemanticParentHandler.$inject = [ 'odUpdater' ];
+UpdateSemanticParentHandler.$inject = ['odUpdater']
 
-
-UpdateSemanticParentHandler.prototype.execute = function(context) {
+UpdateSemanticParentHandler.prototype.execute = function (context) {
   var dataStoreBo = context.dataStoreBo,
-      newSemanticParent = context.newSemanticParent,
-      newDiParent = context.newDiParent;
+    newSemanticParent = context.newSemanticParent,
+    newDiParent = context.newDiParent
 
-  context.oldSemanticParent = dataStoreBo.$parent;
-  context.oldDiParent = dataStoreBo.di.$parent;
+  context.oldSemanticParent = dataStoreBo.$parent
+  context.oldDiParent = dataStoreBo.di.$parent
 
   // update semantic parent
-  this._odUpdater.updateSemanticParent(dataStoreBo, newSemanticParent);
+  this._odUpdater.updateSemanticParent(dataStoreBo, newSemanticParent)
 
   // update DI parent
-  this._odUpdater.updateDiParent(dataStoreBo.di, newDiParent);
-};
+  this._odUpdater.updateDiParent(dataStoreBo.di, newDiParent)
+}
 
-UpdateSemanticParentHandler.prototype.revert = function(context) {
+UpdateSemanticParentHandler.prototype.revert = function (context) {
   var dataStoreBo = context.dataStoreBo,
-      oldSemanticParent = context.oldSemanticParent,
-      oldDiParent = context.oldDiParent;
+    oldSemanticParent = context.oldSemanticParent,
+    oldDiParent = context.oldDiParent
 
   // update semantic parent
-  this._odUpdater.updateSemanticParent(dataStoreBo, oldSemanticParent);
+  this._odUpdater.updateSemanticParent(dataStoreBo, oldSemanticParent)
 
   // update DI parent
-  this._odUpdater.updateDiParent(dataStoreBo.di, oldDiParent);
-};
-
+  this._odUpdater.updateDiParent(dataStoreBo.di, oldDiParent)
+}

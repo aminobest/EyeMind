@@ -1,9 +1,6 @@
-import inherits from 'inherits';
-
-import CommandInterceptor from 'diagram-js/lib/command/CommandInterceptor';
-
-import { isLabel } from '../../../util/LabelUtil';
-
+import CommandInterceptor from 'diagram-js/lib/command/CommandInterceptor'
+import inherits from 'inherits'
+import { isLabel } from '../../../util/LabelUtil'
 
 /**
  * Unclaims model IDs on element deletion.
@@ -14,28 +11,28 @@ import { isLabel } from '../../../util/LabelUtil';
  * @param {Modeling} modeling
  */
 export default function UnclaimIdBehavior(canvas, injector, moddle, modeling) {
-  injector.invoke(CommandInterceptor, this);
+  injector.invoke(CommandInterceptor, this)
 
-  this.preExecute('shape.delete', function(event) {
+  this.preExecute('shape.delete', function (event) {
     var context = event.context,
-        shape = context.shape,
-        shapeBo = shape.businessObject;
+      shape = context.shape,
+      shapeBo = shape.businessObject
 
     if (isLabel(shape)) {
-      return;
+      return
     }
 
-    modeling.unclaimId(shapeBo.id, shapeBo);
-  });
+    modeling.unclaimId(shapeBo.id, shapeBo)
+  })
 
-  this.preExecute('canvas.updateRoot', function() {
+  this.preExecute('canvas.updateRoot', function () {
     var rootElement = canvas.getRootElement(),
-        rootElementBo = rootElement.businessObject;
+      rootElementBo = rootElement.businessObject
 
-    moddle.ids.unclaim(rootElementBo.id);
-  });
+    moddle.ids.unclaim(rootElementBo.id)
+  })
 }
 
-inherits(UnclaimIdBehavior, CommandInterceptor);
+inherits(UnclaimIdBehavior, CommandInterceptor)
 
-UnclaimIdBehavior.$inject = [ 'canvas', 'injector', 'moddle', 'modeling' ];
+UnclaimIdBehavior.$inject = ['canvas', 'injector', 'moddle', 'modeling']

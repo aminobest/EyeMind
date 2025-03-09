@@ -7,11 +7,10 @@
  * @return {Boolean}
  */
 export function is(element, type) {
-  var bo = getBusinessObject(element);
+  var bo = getBusinessObject(element)
 
-  return bo && (typeof bo.$instanceOf === 'function') && bo.$instanceOf(type);
+  return bo && typeof bo.$instanceOf === 'function' && bo.$instanceOf(type)
 }
-
 
 /**
  * Return the business object for a given element.
@@ -21,5 +20,5 @@ export function is(element, type) {
  * @return {ModdleElement}
  */
 export function getBusinessObject(element) {
-  return (element && element.businessObject) || element;
+  return (element && element.businessObject) || element
 }

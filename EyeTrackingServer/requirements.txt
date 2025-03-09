@@ -1,6 +1,7 @@
-tobii-research==1.10.1
-pandas==1.1.4
+tobii-research==2.1.0
+pandas==2.2.3
 Flask==2.0.3
 waitress==2.1.2
-numpy==1.22.0
-scipy==1.9.2
+numpy==2.2.0
+scipy==1.14.1
+Werkzeug==2.2.2

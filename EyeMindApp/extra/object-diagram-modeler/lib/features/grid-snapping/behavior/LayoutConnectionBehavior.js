@@ -1,54 +1,49 @@
-import inherits from 'inherits';
+import CommandInterceptor from 'diagram-js/lib/command/CommandInterceptor'
+import { pointsAligned } from 'diagram-js/lib/util/Geometry'
+import inherits from 'inherits'
+import { assign } from 'min-dash'
 
-import CommandInterceptor from 'diagram-js/lib/command/CommandInterceptor';
-
-import { pointsAligned } from 'diagram-js/lib/util/Geometry';
-
-import {
-  assign
-} from 'min-dash';
-
-var HIGH_PRIORITY = 3000;
-
+var HIGH_PRIORITY = 3000
 
 /**
  * Snaps connections with Manhattan layout.
  */
 export default function LayoutConnectionBehavior(eventBus, gridSnapping, modeling) {
-  CommandInterceptor.call(this, eventBus);
+  CommandInterceptor.call(this, eventBus)
 
-  this._gridSnapping = gridSnapping;
+  this._gridSnapping = gridSnapping
 
-  var self = this;
+  var self = this
 
-  this.postExecuted([
-    'connection.create',
-    'connection.layout'
-  ], HIGH_PRIORITY, function(event) {
-    var context = event.context,
+  this.postExecuted(
+    ['connection.create', 'connection.layout'],
+    HIGH_PRIORITY,
+    function (event) {
+      var context = event.context,
         connection = context.connection,
         hints = context.hints || {},
-        waypoints = connection.waypoints;
+        waypoints = connection.waypoints
 
-    if (hints.connectionStart || hints.connectionEnd || hints.createElementsBehavior === false) {
-      return;
-    }
+      if (
+        hints.connectionStart ||
+        hints.connectionEnd ||
+        hints.createElementsBehavior === false
+      ) {
+        return
+      }
 
-    if (!hasMiddleSegments(waypoints)) {
-      return;
-    }
+      if (!hasMiddleSegments(waypoints)) {
+        return
+      }
 
-    modeling.updateWaypoints(connection, self.snapMiddleSegments(waypoints));
-  });
+      modeling.updateWaypoints(connection, self.snapMiddleSegments(waypoints))
+    },
+  )
 }
 
-LayoutConnectionBehavior.$inject = [
-  'eventBus',
-  'gridSnapping',
-  'modeling'
-];
+LayoutConnectionBehavior.$inject = ['eventBus', 'gridSnapping', 'modeling']
 
-inherits(LayoutConnectionBehavior, CommandInterceptor);
+inherits(LayoutConnectionBehavior, CommandInterceptor)
 
 /**
  * Snap middle segments of a given connection.
@@ -57,23 +52,21 @@ inherits(LayoutConnectionBehavior, CommandInterceptor);
  *
  * @returns {Array<Point>}
  */
-LayoutConnectionBehavior.prototype.snapMiddleSegments = function(waypoints) {
+LayoutConnectionBehavior.prototype.snapMiddleSegments = function (waypoints) {
   var gridSnapping = this._gridSnapping,
-      snapped;
+    snapped
 
-  waypoints = waypoints.slice();
+  waypoints = waypoints.slice()
 
   for (var i = 1; i < waypoints.length - 2; i++) {
+    snapped = snapSegment(gridSnapping, waypoints[i], waypoints[i + 1])
 
-    snapped = snapSegment(gridSnapping, waypoints[i], waypoints[i + 1]);
-
-    waypoints[i] = snapped[0];
-    waypoints[i + 1] = snapped[1];
+    waypoints[i] = snapped[0]
+    waypoints[i + 1] = snapped[1]
   }
 
-  return waypoints;
-};
-
+  return waypoints
+}
 
 // helpers //////////
 
@@ -85,7 +78,7 @@ LayoutConnectionBehavior.prototype.snapMiddleSegments = function(waypoints) {
  * @returns {boolean}
  */
 function hasMiddleSegments(waypoints) {
-  return waypoints.length > 3;
+  return waypoints.length > 3
 }
 
 /**
@@ -96,7 +89,7 @@ function hasMiddleSegments(waypoints) {
  * @returns {boolean}
  */
 function horizontallyAligned(aligned) {
-  return aligned === 'h';
+  return aligned === 'h'
 }
 
 /**
@@ -107,7 +100,7 @@ function horizontallyAligned(aligned) {
  * @returns {boolean}
  */
 function verticallyAligned(aligned) {
-  return aligned === 'v';
+  return aligned === 'v'
 }
 
 /**
@@ -118,27 +111,24 @@ function verticallyAligned(aligned) {
  * @returns {Array}
  */
 function snapSegment(gridSnapping, segmentStart, segmentEnd) {
+  var aligned = pointsAligned(segmentStart, segmentEnd)
 
-  var aligned = pointsAligned(segmentStart, segmentEnd);
-
-  var snapped = {};
+  var snapped = {}
 
   if (horizontallyAligned(aligned)) {
-
     // snap horizontally
-    snapped.y = gridSnapping.snapValue(segmentStart.y);
+    snapped.y = gridSnapping.snapValue(segmentStart.y)
   }
 
   if (verticallyAligned(aligned)) {
-
     // snap vertically
-    snapped.x = gridSnapping.snapValue(segmentStart.x);
+    snapped.x = gridSnapping.snapValue(segmentStart.x)
   }
 
   if ('x' in snapped || 'y' in snapped) {
-    segmentStart = assign({}, segmentStart, snapped);
-    segmentEnd = assign({}, segmentEnd, snapped);
+    segmentStart = assign({}, segmentStart, snapped)
+    segmentEnd = assign({}, segmentEnd, snapped)
   }
 
-  return [ segmentStart, segmentEnd ];
+  return [segmentStart, segmentEnd]
 }

@@ -1,9 +1,5 @@
-import {
-  some
-} from 'min-dash';
-
-import { is } from '../../../util/ModelUtil';
-
+import { some } from 'min-dash'
+import { is } from '../../../util/ModelUtil'
 
 /**
  * Return true if element has any of the given types.
@@ -14,11 +10,10 @@ import { is } from '../../../util/ModelUtil';
  * @return {Boolean}
  */
 export function isAny(element, types) {
-  return some(types, function(t) {
-    return is(element, t);
-  });
+  return some(types, function (t) {
+    return is(element, t)
+  })
 }
-
 
 /**
  * Return the parent of the element with any of the given types.
@@ -29,16 +24,15 @@ export function isAny(element, types) {
  * @return {djs.model.Base}
  */
 export function getParent(element, anyType) {
-
   if (typeof anyType === 'string') {
-    anyType = [ anyType ];
+    anyType = [anyType]
   }
 
   while ((element = element.parent)) {
     if (isAny(element, anyType)) {
-      return element;
+      return element
     }
   }
 
-  return null;
+  return null
 }

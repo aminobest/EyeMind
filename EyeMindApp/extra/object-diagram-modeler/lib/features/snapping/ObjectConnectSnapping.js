@@ -1,21 +1,15 @@
-import {
-  mid,
-  setSnapped
-} from 'diagram-js/lib/features/snapping/SnapUtil';
+import { isCmd } from 'diagram-js/lib/features/keyboard/KeyboardUtil'
+import { mid, setSnapped } from 'diagram-js/lib/features/snapping/SnapUtil'
+import { some } from 'min-dash'
+import { isAny } from '../modeling/util/ModelingUtil'
 
-import { isCmd } from 'diagram-js/lib/features/keyboard/KeyboardUtil';
+var HIGHER_PRIORITY = 1250
 
-import { isAny } from '../modeling/util/ModelingUtil';
+var OBJECT_BOUNDS_PADDING = 10
 
-import { some } from 'min-dash';
+var TARGET_CENTER_PADDING = 20
 
-var HIGHER_PRIORITY = 1250;
-
-var OBJECT_BOUNDS_PADDING = 10;
-
-var TARGET_CENTER_PADDING = 20;
-
-var AXES = [ 'x', 'y' ];
+var AXES = ['x', 'y']
 
 /**
  * Snap during connect.
@@ -23,91 +17,90 @@ var AXES = [ 'x', 'y' ];
  * @param {EventBus} eventBus
  */
 export default function ObjectConnectSnapping(eventBus) {
-  eventBus.on([
-    'connect.hover',
-    'connect.move',
-    'connect.end',
-  ], HIGHER_PRIORITY, function(event) {
-    var context = event.context,
+  eventBus.on(
+    ['connect.hover', 'connect.move', 'connect.end'],
+    HIGHER_PRIORITY,
+    function (event) {
+      var context = event.context,
         canExecute = context.canExecute,
         start = context.start,
-        hover = context.hover;
+        hover = context.hover
 
-    // do NOT snap on CMD
-    if (event.originalEvent && isCmd(event.originalEvent)) {
-      return;
-    }
+      // do NOT snap on CMD
+      if (event.originalEvent && isCmd(event.originalEvent)) {
+        return
+      }
 
-    if (!context.initialConnectionStart) {
-      context.initialConnectionStart = context.connectionStart;
-    }
-
-    // snap hover
-    if (canExecute && hover) {
-      snapToShape(event, hover, getTargetBoundsPadding());
-    }
-
-    if (hover && isAnyType(canExecute, [
-      'od:Link',
-    ])) {
-      context.connectionStart = mid(start);
+      if (!context.initialConnectionStart) {
+        context.initialConnectionStart = context.connectionStart
+      }
 
       // snap hover
-      if (isAny(hover, [ 'od:Object' ])) {
-        snapToTargetMid(event, hover);
+      if (canExecute && hover) {
+        snapToShape(event, hover, getTargetBoundsPadding())
       }
-    }
-  });
+
+      if (hover && isAnyType(canExecute, ['od:Link'])) {
+        context.connectionStart = mid(start)
+
+        // snap hover
+        if (isAny(hover, ['od:Object'])) {
+          snapToTargetMid(event, hover)
+        }
+      }
+    },
+  )
 }
 
-ObjectConnectSnapping.$inject = [ 'eventBus' ];
-
+ObjectConnectSnapping.$inject = ['eventBus']
 
 // helpers //////////
 
 // snap to target if event in target
 function snapToShape(event, target, padding) {
-  AXES.forEach(function(axis) {
-    var dimensionForAxis = getDimensionForAxis(axis, target);
+  AXES.forEach(function (axis) {
+    var dimensionForAxis = getDimensionForAxis(axis, target)
 
-    if (event[ axis ] < target[ axis ] + padding) {
-      setSnapped(event, axis, target[ axis ] + padding);
-    } else if (event[ axis ] > target[ axis ] + dimensionForAxis - padding) {
-      setSnapped(event, axis, target[ axis ] + dimensionForAxis - padding);
+    if (event[axis] < target[axis] + padding) {
+      setSnapped(event, axis, target[axis] + padding)
+    } else if (event[axis] > target[axis] + dimensionForAxis - padding) {
+      setSnapped(event, axis, target[axis] + dimensionForAxis - padding)
     }
-  });
+  })
 }
 
 // snap to target mid if event in target mid
 function snapToTargetMid(event, target) {
-  var targetMid = mid(target);
+  var targetMid = mid(target)
 
-  AXES.forEach(function(axis) {
+  AXES.forEach(function (axis) {
     if (isMid(event, target, axis)) {
-      setSnapped(event, axis, targetMid[ axis ]);
+      setSnapped(event, axis, targetMid[axis])
     }
-  });
+  })
 }
 
 function isType(attrs, type) {
-  return attrs && attrs.type === type;
+  return attrs && attrs.type === type
 }
 
 function isAnyType(attrs, types) {
-  return some(types, function(type) {
-    return isType(attrs, type);
-  });
+  return some(types, function (type) {
+    return isType(attrs, type)
+  })
 }
 
 function getDimensionForAxis(axis, element) {
-  return axis === 'x' ? element.width : element.height;
+  return axis === 'x' ? element.width : element.height
 }
 
 function getTargetBoundsPadding() {
-  return OBJECT_BOUNDS_PADDING;
+  return OBJECT_BOUNDS_PADDING
 }
 
 function isMid(event, target, axis) {
-  return event[ axis ] > target[ axis ] + TARGET_CENTER_PADDING
-    && event[ axis ] < target[ axis ] + getDimensionForAxis(axis, target) - TARGET_CENTER_PADDING;
+  return (
+    event[axis] > target[axis] + TARGET_CENTER_PADDING &&
+    event[axis] < target[axis] + getDimensionForAxis(axis, target) - TARGET_CENTER_PADDING
+  )
 }

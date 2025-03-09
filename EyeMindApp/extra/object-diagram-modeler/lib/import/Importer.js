@@ -1,4 +1,4 @@
-import OdTreeWalker from './OdTreeWalker';
+import OdTreeWalker from './OdTreeWalker'
 
 /**
  * The importodDi:agram result.
@@ -9,12 +9,12 @@ import OdTreeWalker from './OdTreeWalker';
  */
 
 /**
-* The importodDi:agram error.
-*
-* @typedef {Error} importodDi:agramError
-*
-* @property {Array<string>} warnings
-*/
+ * The importodDi:agram error.
+ *
+ * @typedef {Error} importodDi:agramError
+ *
+ * @property {Array<string>} warnings
+ */
 
 /**
  * Import the definitions into a diagram.
@@ -29,13 +29,10 @@ import OdTreeWalker from './OdTreeWalker';
  * Returns {Promise<importodDi:agramResult, importodDi:agramError>}
  */
 export function importOdDiagram(diagram, definitions, rootBoard) {
-
-  var importer,
-      eventBus,
-      translate;
+  var importer, eventBus, translate
 
   var error,
-      warnings = [];
+    warnings = []
 
   /**
    * Walk the diagram semantically, importing (=drawing)
@@ -45,47 +42,45 @@ export function importOdDiagram(diagram, definitions, rootBoard) {
    * @param {ModdleElement<ODRootBoard>} rootBoard
    */
   function render(definitions, rootBoard) {
-
     var visitor = {
-
-      root: function(element) {
-        return importer.add(element);
+      root: function (element) {
+        return importer.add(element)
       },
 
-      element: function(element, parentShape) {
-        return importer.add(element, parentShape);
+      element: function (element, parentShape) {
+        return importer.add(element, parentShape)
       },
 
-      error: function(message, context) {
-        warnings.push({ message: message, context: context });
-      }
-    };
+      error: function (message, context) {
+        warnings.push({ message: message, context: context })
+      },
+    }
 
-    var walker = new OdTreeWalker(visitor, translate);
+    var walker = new OdTreeWalker(visitor, translate)
 
     // traverse xml document model,
     // starting at definitions
-    walker.handleDefinitions(definitions, rootBoard);
+    walker.handleDefinitions(definitions, rootBoard)
   }
 
-  return new Promise(function(resolve, reject) {
+  return new Promise(function (resolve, reject) {
     try {
-      importer = diagram.get('odImporter');
-      eventBus = diagram.get('eventBus');
-      translate = diagram.get('translate');
+      importer = diagram.get('odImporter')
+      eventBus = diagram.get('eventBus')
+      translate = diagram.get('translate')
 
-      eventBus.fire('import.render.start', { definitions: definitions });
+      eventBus.fire('import.render.start', { definitions: definitions })
 
-      render(definitions, rootBoard);
+      render(definitions, rootBoard)
 
       eventBus.fire('import.render.complete', {
         error: error,
-        warnings: warnings
-      });
+        warnings: warnings,
+      })
 
-      return resolve({ warnings: warnings });
+      return resolve({ warnings: warnings })
     } catch (e) {
-      return reject(e);
+      return reject(e)
     }
-  });
+  })
 }

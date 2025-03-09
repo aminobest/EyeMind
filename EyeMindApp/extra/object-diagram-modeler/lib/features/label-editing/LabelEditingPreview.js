@@ -1,46 +1,38 @@
-import {
-  remove as svgRemove
-} from 'tiny-svg';
+import { remove as svgRemove } from 'tiny-svg'
 
-var MARKER_HIDDEN = 'djs-element-hidden';
+var MARKER_HIDDEN = 'djs-element-hidden'
 
+export default function LabelEditingPreview(eventBus, canvas) {
+  var element, gfx
 
-export default function LabelEditingPreview(
-    eventBus, canvas) {
+  eventBus.on('directEditing.activate', function (context) {
+    var activeProvider = context.active
 
-
-  var element, gfx;
-
-  eventBus.on('directEditing.activate', function(context) {
-    var activeProvider = context.active;
-
-    element = activeProvider.element.label || activeProvider.element;
-
+    element = activeProvider.element.label || activeProvider.element
 
     if (element.labelTarget) {
-      canvas.addMarker(element, MARKER_HIDDEN);
+      canvas.addMarker(element, MARKER_HIDDEN)
     }
-  });
+  })
 
-
-  eventBus.on([ 'directEditing.complete', 'directEditing.cancel' ], function(context) {
-    var activeProvider = context.active;
+  eventBus.on(['directEditing.complete', 'directEditing.cancel'], function (context) {
+    var activeProvider = context.active
 
     if (activeProvider) {
-      canvas.removeMarker(activeProvider.element.label || activeProvider.element, MARKER_HIDDEN);
+      canvas.removeMarker(
+        activeProvider.element.label || activeProvider.element,
+        MARKER_HIDDEN,
+      )
     }
 
-    element = undefined;
+    element = undefined
 
     if (gfx) {
-      svgRemove(gfx);
+      svgRemove(gfx)
 
-      gfx = undefined;
+      gfx = undefined
     }
-  });
+  })
 }
 
-LabelEditingPreview.$inject = [
-  'eventBus',
-  'canvas'
-];
+LabelEditingPreview.$inject = ['eventBus', 'canvas']

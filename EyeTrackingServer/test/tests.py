@@ -1,6 +1,7 @@
 import unittest
 import time
-from utils.utils import send, read_json_directory, generateGazePoints
+from ..server.utils import generateGazePoints
+from utils import send, read_json_directory
 import pandas as pd
 from pandas.testing import assert_frame_equal
 

@@ -1,10 +1,9 @@
-import DirectEditingModule from 'diagram-js-direct-editing';
-import ContextPadModule from 'diagram-js/lib/features/context-pad';
-import SelectionModule from 'diagram-js/lib/features/selection';
-import ConnectModule from 'diagram-js/lib/features/connect';
-import CreateModule from 'diagram-js/lib/features/create';
-
-import ContextPadProvider from './ContextPadProvider';
+import DirectEditingModule from 'diagram-js-direct-editing'
+import ConnectModule from 'diagram-js/lib/features/connect'
+import ContextPadModule from 'diagram-js/lib/features/context-pad'
+import CreateModule from 'diagram-js/lib/features/create'
+import SelectionModule from 'diagram-js/lib/features/selection'
+import ContextPadProvider from './ContextPadProvider'
 
 export default {
   __depends__: [
@@ -14,6 +13,6 @@ export default {
     ConnectModule,
     CreateModule,
   ],
-  __init__: [ 'contextPadProvider' ],
-  contextPadProvider: [ 'type', ContextPadProvider ]
-};
+  __init__: ['contextPadProvider'],
+  contextPadProvider: ['type', ContextPadProvider],
+}
